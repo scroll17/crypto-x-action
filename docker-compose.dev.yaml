@@ -1,0 +1,68 @@
+version: "3"
+
+services:
+  api:
+    container_name: crypto_x_api
+    build:
+      context: ./
+      dockerfile: ./server/Dockerfile
+    ports:
+      - "4040:4040"
+    networks:
+      - services-network
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      PORT: 4040
+      NODE_ENV: development
+    volumes:
+      - ./server:/home/app/crypto_x_server
+      - /home/app/crypto_x_server/node_modules
+    tty: true
+    restart: "always"
+    entrypoint: /bin/bash
+#    command: -c "npm run start"
+    command: -s
+
+  database:
+    image: postgres:13-bullseye
+    container_name: crypto_x_database
+    restart: "always"
+    ports:
+      - "5433:5432"
+    networks:
+      - services-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+    environment:
+      - POSTGRES_DB=crypto_x
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+  redis:
+    image: redis:5.0.3-alpine
+    container_name: crypto_x_redis
+    ports:
+      - "6399:6379"
+    networks:
+      - services-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    tty: true
+    restart: "always"
+
+networks:
+  services-network:
+    driver: bridge
+
+volumes:
+  app:
