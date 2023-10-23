@@ -28,9 +28,10 @@ export class Constant {
   compressed: boolean;
 }
 
-export const ConstantSchema = SchemaFactory.createForClass(
-  Constant,
-) as unknown as MongooseSchema<Type<Constant>, ConstantModel>;
+export const ConstantSchema = SchemaFactory.createForClass(Constant) as unknown as MongooseSchema<
+  Type<Constant>,
+  ConstantModel
+>;
 
 // INDEXES
 
@@ -38,20 +39,9 @@ export const ConstantSchema = SchemaFactory.createForClass(
 type TStaticMethods = {
   compress(this: ConstantModel, value: string): Promise<string>;
   decompress(this: ConstantModel, value: string): Promise<string>;
-  getParsedValue: <TReturn>(
-    this: ConstantModel,
-    value: string | ConstantDocument,
-  ) => TReturn;
-  getConstant: (
-    this: ConstantModel,
-    name: ConstantEntities,
-  ) => Promise<ConstantDocument | null>;
-  upsert: (
-    this: ConstantModel,
-    name: ConstantEntities,
-    value: string,
-    compress: boolean,
-  ) => Promise<ConstantDocument>;
+  getParsedValue: <TReturn>(this: ConstantModel, value: string | ConstantDocument) => TReturn;
+  getConstant: (this: ConstantModel, name: ConstantEntities) => Promise<ConstantDocument | null>;
+  upsert: (this: ConstantModel, name: ConstantEntities, value: string, compress: boolean) => Promise<ConstantDocument>;
 };
 
 // STATIC METHODS IMPLEMENTATION
@@ -68,7 +58,7 @@ ConstantSchema.statics.decompress = async function (value) {
   return inflatedOutput.toString('utf8');
 } as TStaticMethods['decompress'];
 
-ConstantSchema.statics.getParsedValue = function <TReturn>(entity) {
+ConstantSchema.statics.getParsedValue = function <TReturn>(entity: string | { value: string }) {
   if (typeof entity === 'string') return JSON.parse(entity);
 
   return JSON.parse(entity.value) as TReturn;

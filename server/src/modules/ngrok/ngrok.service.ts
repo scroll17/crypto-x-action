@@ -1,7 +1,7 @@
 /*external modules*/
 import * as _ from 'lodash';
-import * as path from 'path';
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import * as path from 'node:path';
+import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 /*services*/
@@ -33,11 +33,7 @@ export class NgrokService implements OnModuleDestroy {
   }
 
   private parseLog(message: string): ILog | null {
-    if (message[0] === '{') {
-      return JSON.parse(message);
-    } else {
-      return null;
-    }
+    return message[0] === '{' ? JSON.parse(message) : null;
   }
 
   private getDefaultOpts(opts: IPublicOptions): IOptions {
@@ -59,7 +55,7 @@ export class NgrokService implements OnModuleDestroy {
   }
 
   private async startProcess(opts: IOptions) {
-    const start: string[] = [opts.proto, `--log=${opts.log}`, `--log-format=${opts.logFormat}`];
+    const start: string[] = [opts.proto ?? 'http', `--log=${opts.log}`, `--log-format=${opts.logFormat}`];
 
     if (opts.authToken) start.push(`--authtoken=${opts.authToken}`);
     if (opts.hostHeader) start.push(`--host-header=${opts.hostHeader}`);
@@ -90,7 +86,7 @@ export class NgrokService implements OnModuleDestroy {
         });
 
         ngrok.stderr.on('data', (data) => {
-          const msg = data.toString().substring(0, 10000);
+          const msg = data.toString().slice(0, 10_000);
           reject(new Error(msg));
         });
 
@@ -105,9 +101,9 @@ export class NgrokService implements OnModuleDestroy {
       this.activeProcess = ngrok;
 
       return url;
-    } catch (ex) {
+    } catch (error) {
       ngrok.kill();
-      throw ex;
+      throw error;
     } finally {
       ngrok.stdout.removeAllListeners('data');
       ngrok.stderr.removeAllListeners('data');
@@ -120,9 +116,9 @@ export class NgrokService implements OnModuleDestroy {
     try {
       this.processPromise = this.startProcess(opts);
       return await this.processPromise;
-    } catch (ex) {
+    } catch (error) {
       this.processPromise = null;
-      throw ex;
+      throw error;
     }
   }
 

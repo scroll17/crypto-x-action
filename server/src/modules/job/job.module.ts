@@ -1,14 +1,9 @@
 /*external modules*/
-import * as ms from 'ms';
+import ms from 'ms';
 import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigService } from '@nestjs/config';
-import {
-  AudioConsumer,
-  audioProcessorName,
-  InitLoadSheetConsumer,
-  initLoadSheetName,
-} from './consumers';
+import { AudioConsumer, audioProcessorName, InitLoadSheetConsumer, initLoadSheetName } from './consumers';
 import { ReloadSheetConsumer, reloadSheetName } from './static/consumers';
 import { JobBoardService } from './board/job-board.service';
 import { JobStaticService } from './static/job-static.service';
@@ -25,10 +20,7 @@ const staticConsumers = [ReloadSheetConsumer];
 
 const allConsumers = [...consumers, ...staticConsumers];
 
-const buildDefaultJobOptions = (
-  timeout: number,
-  [removeOnComplete = 2, removeOnFail = 2] = [],
-) => ({
+const buildDefaultJobOptions = (timeout: number, [removeOnComplete = 2, removeOnFail = 2] = []) => ({
   attempts: 1,
   timeout,
   removeOnFail,
@@ -96,8 +88,6 @@ export class JobModule implements NestModule {
   constructor(private readonly jobBoardService: JobBoardService) {}
 
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(this.jobBoardService.getRouter())
-      .forRoutes(this.jobBoardService.getBasePath());
+    consumer.apply(this.jobBoardService.getRouter()).forRoutes(this.jobBoardService.getBasePath());
   }
 }

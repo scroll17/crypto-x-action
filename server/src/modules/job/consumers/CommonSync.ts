@@ -25,34 +25,23 @@ export abstract class CommonSyncConsumer {
       .join(' ');
   }
 
-  protected async unionLogger(
-    job: Job,
-    message: string,
-    data: string | object = {},
-  ) {
+  protected async unionLogger(job: Job, message: string, data: string | object = {}) {
     this.logger.log(message, data);
 
     const currentTime = new Date().toTimeString().slice(0, 8);
-    await job.log(
-      `[${currentTime}] ${message} ${
-        typeof data === 'object' ? JSON.stringify(data) : data
-      }`,
-    );
+    await job.log(`[${currentTime}] ${message} ${typeof data === 'object' ? JSON.stringify(data) : data}`);
   }
 
   protected async notifyAdmin(title: string, obj: Record<string, unknown>) {
-    const admin = await this.userModel.findOne({ isAdmin: true });
+    const admin = await this.userModel.findOne({ isAdmin: true }).exec();
     await this.notificationBotService.send({
-      to: String(admin.telegramId),
+      to: String(admin!.telegramId),
       title: title,
       jsonObject: obj,
     });
   }
 
-  protected async withTransaction(
-    job: Job,
-    cb: (session: ClientSession) => Promise<Record<string, unknown>>,
-  ) {
+  protected async withTransaction(job: Job, cb: (session: ClientSession) => Promise<Record<string, unknown>>) {
     await this.unionLogger(job, `DB #1: Start session`);
     const session = await this.connection.startSession();
 
@@ -66,7 +55,7 @@ export abstract class CommonSyncConsumer {
 
       await this.unionLogger(job, `DB #3: Commit transaction`);
 
-      return result;
+      return result!;
     } catch (error) {
       const preparedError = _.omit(error, ['request']);
       if ('response' in preparedError) {
@@ -84,7 +73,7 @@ export abstract class CommonSyncConsumer {
   }
 
   // EVENTS
-  protected abstract main(job: Job, session: ClientSession);
+  protected abstract main(job: Job, session: ClientSession): Promise<Record<string, unknown>>;
 
   protected process(job: Job) {
     return this.withTransaction(job, async (session) => {
@@ -93,24 +82,15 @@ export abstract class CommonSyncConsumer {
   }
 
   protected onActive(job: Job) {
-    this.logger.debug(
-      `Processing job ${job.id} of Queue ${job.queue.name} with data:`,
-      job.data,
-    );
+    this.logger.debug(`Processing job ${job.id} of Queue ${job.queue.name} with data:`, job.data);
   }
 
   protected onComplete(job: Job, result: Record<string, unknown>) {
-    this.logger.debug(
-      `Job ${job.id} of Queue ${job.queue.name}: completed with result:`,
-      result,
-    );
+    this.logger.debug(`Job ${job.id} of Queue ${job.queue.name}: completed with result:`, result);
   }
 
   protected async onFail(job: Job, err: Error) {
-    this.logger.debug(
-      `Job ${job.id} of Queue ${job.queue.name} failed with error`,
-      err,
-    );
+    this.logger.debug(`Job ${job.id} of Queue ${job.queue.name} failed with error`, err);
 
     await this.notifyAdmin(`FAIL: ${this.getReadableQueueName()}`, {
       name: err.name,

@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Queue } from 'bull';
+import { Queue, JobStatus } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import { reloadSheetName, TReloadSheetProcessorQueue } from './consumers';
 
@@ -36,23 +36,16 @@ export class JobStaticService implements OnModuleInit {
   }
 
   // USEFUL FUNCTIONS
-  public async removeAllNextJobs(
-    staticQueue: Queue,
-    readableQueueName: string,
-  ) {
-    const allNextJobs = await staticQueue.getJobs([
-      'active',
-      'waiting',
-      'delayed',
-      'paused',
-      'failed',
-    ]);
-    const result = {
+  public async removeAllNextJobs(staticQueue: Queue, readableQueueName: string) {
+    const allNextJobs = await staticQueue.getJobs(['active', 'waiting', 'delayed', 'paused', 'failed']);
+    const result: Record<JobStatus | 'stuck', number> = {
       active: 0,
       waiting: 0,
       delayed: 0,
       paused: 0,
       failed: 0,
+      completed: 0,
+      stuck: 0,
     };
 
     await Promise.all(
@@ -69,18 +62,11 @@ export class JobStaticService implements OnModuleInit {
     return result;
   }
 
-  public async removeRepeatableJobs(
-    staticQueue: Queue,
-    readableQueueName: string,
-  ) {
+  public async removeRepeatableJobs(staticQueue: Queue, readableQueueName: string) {
     const repeatableJobs = await staticQueue.getRepeatableJobs();
 
     if (repeatableJobs.length > 0) {
-      await Promise.all(
-        _.map(repeatableJobs, (job) =>
-          staticQueue.removeRepeatableByKey(job.key),
-        ),
-      );
+      await Promise.all(_.map(repeatableJobs, (job) => staticQueue.removeRepeatableByKey(job.key)));
 
       this.logger.debug(`"${readableQueueName}" repeatable jobs removed:`, {
         oldJobs: _.map(repeatableJobs, 'key'),
@@ -88,10 +74,7 @@ export class JobStaticService implements OnModuleInit {
     }
   }
 
-  public async clearStaticQueueJobs(
-    staticQueue: Queue,
-    readableQueueName: string,
-  ) {
+  public async clearStaticQueueJobs(staticQueue: Queue, readableQueueName: string) {
     try {
       await this.removeRepeatableJobs(staticQueue, readableQueueName);
 
@@ -109,13 +92,10 @@ export class JobStaticService implements OnModuleInit {
       await staticQueue.add({});
       this.logger.debug(`"${readableQueueName}" started`);
     } catch (error) {
-      this.logger.error(
-        'Received error until init (add) repeatable job to queue:',
-        {
-          err: error,
-          queueName: readableQueueName,
-        },
-      );
+      this.logger.error('Received error until init (add) repeatable job to queue:', {
+        err: error,
+        queueName: readableQueueName,
+      });
     }
   }
 

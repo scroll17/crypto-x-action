@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import * as express from 'express';
+import express from 'express';
 
 export function runHealthcheckServer(port: number, serverName: string) {
   const logger = new Logger('HealthCheckServer:' + serverName);

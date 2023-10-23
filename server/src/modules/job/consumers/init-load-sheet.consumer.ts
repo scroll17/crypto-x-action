@@ -1,17 +1,11 @@
 /*external modules*/
-import {
-  OnQueueActive,
-  OnQueueCompleted,
-  OnQueueFailed,
-  Process,
-  Processor,
-} from '@nestjs/bull';
+import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bull';
 import { Logger } from '@nestjs/common';
 import { User, UserModel } from '@schemas/user';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { CommonSyncConsumer } from './CommonSync';
-import { Connection } from 'mongoose';
+import { ClientSession, Connection } from 'mongoose';
 import { TelegramNotificationBotService } from '../../telegram/notification/notification.service';
 
 export type TInitLoadSheetProcessorData = void;
@@ -35,7 +29,8 @@ export class InitLoadSheetConsumer extends CommonSyncConsumer {
   }
 
   // initLoadSheet
-  protected async main(job: Job<TInitLoadSheetProcessorData>, session) {
+  protected async main(_job: Job<TInitLoadSheetProcessorData>, _session: ClientSession) {
+    return {};
     // // START
     // await this.unionLogger(job, 'Start init load sheet');
     //
@@ -150,17 +145,17 @@ export class InitLoadSheetConsumer extends CommonSyncConsumer {
   }
 
   @OnQueueActive()
-  protected onActive(job) {
+  protected onActive(job: Job) {
     super.onActive(job);
   }
 
   @OnQueueCompleted()
-  protected onComplete(job, result) {
+  protected onComplete(job: Job, result: Record<string, unknown>) {
     super.onComplete(job, result);
   }
 
   @OnQueueFailed()
-  protected async onFail(job, err) {
+  protected async onFail(job: Job, err: Error) {
     await super.onFail(job, err);
   }
 }

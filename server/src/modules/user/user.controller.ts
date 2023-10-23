@@ -2,9 +2,8 @@ import { Controller, Get, HttpCode, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiForbiddenResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '@common/guards';
-import { CurrentUser, DisableController } from '@common/decorators';
-import { ICurrentUserData } from '@common/interfaces/auth';
-import { UserModel } from '@entities/user';
+import { DisableController } from '@common/decorators';
+import { UserEntity } from '@schemas/user';
 
 @Controller('user')
 @ApiTags('User')
@@ -20,10 +19,10 @@ export class UserController {
   @ApiOkResponse({
     status: 200,
     description: 'Current user.',
-    type: UserModel,
+    type: UserEntity,
   })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getMe(@CurrentUser() user: ICurrentUserData) {
-    return user.info;
+  async getMe() {
+    return {};
   }
 }

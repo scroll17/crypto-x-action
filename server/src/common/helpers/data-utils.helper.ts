@@ -16,7 +16,7 @@ export class DataUtilsHelper {
   public splitStringArrByLength(arr: string[], maxLength: number): string[][] {
     const result: string[][] = [];
 
-    let currentArr = [];
+    let currentArr: string[] = [];
     let currentLength = 0;
     _.forEach(arr, (item) => {
       const nextLength = currentLength + item.length;

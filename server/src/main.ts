@@ -1,4 +1,4 @@
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -49,15 +49,16 @@ async function bootstrap() {
   SwaggerModule.setup('/docs', app, document);
 
   // EXEC COMMANDS
-  await configService.get('bootstrapCommands').reduce(async (acc, command) => {
+  await configService.getOrThrow('bootstrapCommands').reduce(async (acc: Promise<unknown>, command: string) => {
     await acc;
-    return commandService.exec(command);
+    return commandService.exec(command as unknown as string[]);
   }, Promise.resolve());
 
   // START
-  await app.listen(configService.get('port'), () => {
+  const PORT = configService.getOrThrow<number>('ports.http');
+  await app.listen(PORT, () => {
     const logger = new Logger('App');
-    logger.verbose(`Running on port: ${configService.get('port')}`);
+    logger.verbose(`Running on port: ${PORT}`);
   });
 }
 

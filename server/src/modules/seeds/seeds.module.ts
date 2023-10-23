@@ -6,7 +6,7 @@ import { User, UserSchema } from '@schemas/user';
 import { Constant, ConstantSchema } from '@schemas/constant';
 
 const seeds = [UserSeed];
-const commands = [];
+// const commands: unknown[] = [];
 
 @Module({
   imports: [
@@ -22,6 +22,6 @@ const commands = [];
       },
     ]),
   ],
-  providers: [...seeds, ...commands],
+  providers: [...seeds],
 })
 export class SeedsModule {}

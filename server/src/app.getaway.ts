@@ -6,7 +6,7 @@ import {
 import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
-const PORT = Number.parseInt(process.env.APP_GETAWAY_PORT, 10);
+const PORT = Number.parseInt(process.env.APP_GETAWAY_PORT!, 10);
 
 @WebSocketGateway(PORT, {
   transports: ['websocket'],

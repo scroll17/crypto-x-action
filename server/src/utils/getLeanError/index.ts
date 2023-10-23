@@ -24,9 +24,7 @@ const REMOVE_CONFIG_PROPERTIES: Array<keyof AxiosRequestConfig> = [
   'lookup',
 ];
 
-export function getLeanError(
-  error: Error | AxiosError | Record<string, unknown>,
-) {
+export function getLeanError(error: Error | AxiosError | Record<string, unknown>) {
   const isAxiosError = error instanceof AxiosError;
 
   if (isAxiosError || 'config' in error) {
@@ -40,14 +38,14 @@ export function getLeanError(
     }
   }
 
-  if (error?.['response'] && typeof error['response'] === 'object') {
+  if ('response' in error && error['response'] && typeof error['response'] === 'object') {
     const response = error['response'];
 
     if ('config' in response) delete response.config;
     if ('request' in response) delete response.request;
   }
 
-  if (error?.['request'] && typeof error['request'] === 'object') {
+  if ('request' in error && error['request'] && typeof error['request'] === 'object') {
     delete error['request'];
   }
 
