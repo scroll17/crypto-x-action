@@ -2,9 +2,10 @@ FROM node:18-bullseye
 
 ENV HOME_DIR /home/app
 ENV API_DIR $HOME_DIR/x_server
-ENV CLI_PATH ./src/cli.ts
+ENV CLI_PATH ./dist/cli.js
 
 ENV TZ=Europe/Kiev
+ENV NODE_OPTIONS=--max_old_space_size=2548
 
 RUN apt-get update -y && \
     apt-get install -yq tzdata && \
@@ -18,4 +19,8 @@ RUN npm install
 
 COPY ./server $API_DIR
 
-EXPOSE $HTTP_PORT
+RUN npm run build
+
+EXPOSE $PORT
+
+CMD ["npm", "run" ,"start:prod"]

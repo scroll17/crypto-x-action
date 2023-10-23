@@ -5,43 +5,34 @@ services:
     container_name: crypto_x_action_api
     build:
       context: ./
-      dockerfile: ./server/Dockerfile
+      dockerfile: ./server/Dockerfile-prod
     ports:
       - "4000:4000"
-      - "4001:4001"
     environment:
       HTTP_PORT: 4000
-      APP_GETAWAY_PORT: 4001
-      NODE_ENV: development
+      APP_GETAWAY_PORT: 5051
+      NODE_ENV: production
       DB_NAME: main
     env_file:
       - ./server/.env
       - ./mongo/.mongo.env
     depends_on:
-      database:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - database-setup
+      - redis
     links:
       - database:database
-      - redis:redis
     volumes:
-      - ./server:/home/app/x_server
-      - ./server/.env:/home/app/x_server/.env
-      - ./server/node_modules:/home/app/x_server/node_modules
-    tty: true
+      - /home/app/x_server/node_modules
     restart: "always"
-    entrypoint: /bin/bash
-    command: -s
 
   database:
-    image: mongo:4.4
+    image: mongo:4.4.8
     container_name: crypto_x_action_database
     hostname: crypto_x_action_database
     env_file:
       - ./mongo/.mongo.env
     ports:
-      - "27018:27017"
+      - "27017:27017"
     volumes:
       - ./mongo/db:/data/db:rw
     #      - ./mongo/scripts/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh:ro
@@ -57,7 +48,7 @@ services:
     ]
 
   database-setup:
-    image: mongo:4.4
+    image: mongo:4.4.8
     container_name: crypto_x_action_database_setup
     env_file:
       - ./mongo/.mongo.env
@@ -85,18 +76,6 @@ services:
     tty: true
     restart: "always"
     command: ["redis-server", "--appendonly", "yes"] # start redis in persistent storage mode
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: crypto_x_action_redis_commander
-    depends_on:
-      - redis
-    env_file:
-      - ./server/.env
-    ports:
-      - "8082:8081"
-    tty: true
-    restart: "always"
 
 volumes:
   redis-data:
