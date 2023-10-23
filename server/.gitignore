@@ -1,9 +1,13 @@
 # compiled output
 /dist
 /node_modules
+/lib
+/src/data/cache
+#package-lock.json
 
+# Env
 .env
-package-lock.json
+.users.json
 
 # Logs
 logs

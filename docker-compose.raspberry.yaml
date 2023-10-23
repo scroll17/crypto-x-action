@@ -17,8 +17,10 @@ services:
       - ./server/.env
       - ./mongo/.mongo.env
     depends_on:
-      - database-setup
-      - redis
+      database:
+        condition: service_started
+      redis:
+        condition: service_healthy
     links:
       - database:database
     volumes:

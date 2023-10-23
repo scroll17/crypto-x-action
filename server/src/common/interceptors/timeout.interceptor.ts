@@ -19,7 +19,11 @@ export class TimeoutInterceptor implements NestInterceptor {
     const time = this.reflector.get<number>('timeout', context.getHandler());
     if (!time) {
       return throwError(
-        () => new HttpException('Invalid using of Timeout Interceptor', HttpStatus.INTERNAL_SERVER_ERROR),
+        () =>
+          new HttpException(
+            'Invalid using of Timeout Interceptor',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          ),
       );
     }
 

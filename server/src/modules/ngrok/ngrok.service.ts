@@ -6,7 +6,7 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 /*services*/
 /*@common*/
-import { ILog, IOptions, IPublicOptions } from '@common/interfaces/ngrok';
+import { ILog, IOptions, IPublicOptions } from '@common/types/ngrok';
 /*@entities*/
 /*@interfaces*/
 

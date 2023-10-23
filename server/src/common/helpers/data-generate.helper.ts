@@ -1,6 +1,6 @@
 /*external modules*/
 import { Injectable } from '@nestjs/common';
-import crypto from 'crypto';
+import * as crypto from 'node:crypto';
 
 @Injectable()
 export class DataGenerateHelper {
@@ -11,7 +11,7 @@ export class DataGenerateHelper {
       result += Math.floor(min + Math.random() * (max - min));
     }
 
-    return parseInt(result, 10);
+    return Number.parseInt(result, 10);
   }
 
   public randomHEX(len: number) {

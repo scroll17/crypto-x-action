@@ -1,4 +1,13 @@
-/node_modules
-/dist
-/.idea
+# dependencies
+../node_modules
+
+# build
+dist
+
+# git, vs config, idea
+.idea
+.vscode
+.gitignore
+
+# configs
 .env

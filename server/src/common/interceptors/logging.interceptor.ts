@@ -1,11 +1,19 @@
 /*external modules*/
-import { CallHandler, ContextType, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  Logger,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 /*modules*/
 /*adapters*/
 /*providers*/
 /*common*/
+import { IpHelper } from '../helpers';
+import { Socket } from 'socket.io';
 /*libs*/
 /*db*/
 /*other*/
@@ -14,49 +22,85 @@ import { tap } from 'rxjs/operators';
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(this.constructor.name);
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    let token: string | null = null;
-    let trace: Record<string, string | number | Date> = {};
+  constructor(private readonly ipHelper: IpHelper) {}
 
-    // console.log('getType => ', context.getType())
-    // console.log('switchToWs => ', context.switchToWs())
-    // console.log('switchToWs getContext => ', context.switchToWs().getClient())
-    // console.log('switchToWs getData => ', context.switchToWs().getData())
+  public intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<unknown> {
+    let token: string;
+    let trace: Record<
+      string,
+      string | number | Date | Record<string, unknown>
+    > = {};
 
     switch (context.getType()) {
       case 'http': {
         const httpContext = context.switchToHttp();
         const request = httpContext.getRequest();
 
+        const rawIp = this.ipHelper.getHTTPRawIp(request);
+
         token = `HTTP ${request.method} "${request.path}"`;
         trace = {
+          rawIp: rawIp,
+          ip: this.ipHelper.convertRawIp(rawIp),
           body: request.body,
           query: request.query,
-          headers: request.headers,
+          cookies: request.cookies,
           timestamp: new Date(),
         };
 
         break;
       }
-      case 'telegraf' as ContextType: {
-        const httpContext = context.switchToHttp();
-        const request = httpContext.getRequest();
+      case 'rpc': {
+        const rpcContext = context.switchToRpc();
 
-        token = `Telegraf ${request.method} "${request.path}"`;
+        const path = (rpcContext.getContext().args ?? []).join('/');
+        const data = rpcContext.getData();
+
+        token = `RPC "${path}"`;
         trace = {
-          body: request.body,
-          query: request.query,
-          headers: request.headers,
+          data,
           timestamp: new Date(),
         };
+
+        break;
+      }
+      case 'ws': {
+        const wsContext = context.switchToWs();
+        const client = wsContext.getClient() as Socket;
+
+        const rawIp = this.ipHelper.getSocketRawIp(client);
+
+        const data = wsContext.getData();
+        const path = client.data.event;
+
+        token = `WS "${path}"`;
+        trace = {
+          rawIp: rawIp,
+          ip: this.ipHelper.convertRawIp(rawIp),
+          data: data,
+          timestamp: new Date(),
+        };
+
+        break;
       }
     }
 
-    this.logger.debug(token ?? '<token>', trace);
+    this.logger.verbose(token, trace);
 
     const now = Date.now();
     return next
       .handle()
-      .pipe(tap(() => this.logger.debug(`[${token}] Execution time: ${((Date.now() - now) / 1000).toFixed(2)}s`)));
+      .pipe(
+        tap(() =>
+          this.logger.debug(
+            `[${token}] Execution time: ${((Date.now() - now) / 1000).toFixed(
+              2,
+            )}s`,
+          ),
+        ),
+      );
   }
 }

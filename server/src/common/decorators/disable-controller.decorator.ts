@@ -4,5 +4,8 @@ import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { ControllerDisabledGuard } from '@common/guards';
 
 export function DisableController() {
-  return applyDecorators(SetMetadata('isDisable', true), UseGuards(ControllerDisabledGuard));
+  return applyDecorators(
+    SetMetadata('isDisable', true),
+    UseGuards(ControllerDisabledGuard),
+  );
 }

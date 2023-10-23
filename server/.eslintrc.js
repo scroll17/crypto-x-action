@@ -16,9 +16,9 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:security/recommended',
     'plugin:sonarjs/recommended',
-    'plugin:unicorn/recommended'
+    'plugin:unicorn/recommended',
+    'plugin:you-dont-need-lodash-underscore/compatible'
   ],
-  //
   root: true,
   env: {
     node: true,
@@ -26,7 +26,9 @@ module.exports = {
     es2022: true,
     browser: false,
   },
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: [
+    '.eslintrc.js'
+  ],
   rules: {
     'no-console': 'warn',
     'unicorn/prevent-abbreviations': 'off',

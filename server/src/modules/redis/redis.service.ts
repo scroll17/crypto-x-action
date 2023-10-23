@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import Redis, { RedisOptions } from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 
@@ -18,7 +25,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   public async onModuleDestroy() {
-    await Promise.all([this.defaultConnection, ...this.connections].map((conn) => conn.quit()));
+    await Promise.all(
+      [this.defaultConnection, ...this.connections].map((conn) => conn.quit()),
+    );
   }
 
   private getDefaultOptions() {
@@ -40,7 +49,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     });
     this.connections.push(connection);
 
-    this.logger.verbose('Created connection to Redis', this.getDefaultConnection());
+    this.logger.verbose(
+      'Created connection to Redis',
+      this.getDefaultConnection(),
+    );
 
     return connection;
   }
@@ -60,7 +72,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async isConnected(connection = this.defaultConnection) {
     const ping = await connection.ping();
     if (ping !== 'PONG') {
-      throw new HttpException('Redis disconnected.', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Redis disconnected.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

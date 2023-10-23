@@ -1,6 +1,12 @@
 /*external modules*/
-import _ from 'lodash';
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import * as _ from 'lodash';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()
@@ -10,7 +16,10 @@ export class ControllerDisabledGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const isDisabled = this.reflector.get<boolean>('isDisable', context.getClass());
+    const isDisabled = this.reflector.get<boolean>(
+      'isDisable',
+      context.getClass(),
+    );
     if (isDisabled) {
       const request = context.switchToHttp().getRequest();
 

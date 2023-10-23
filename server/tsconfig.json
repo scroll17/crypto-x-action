@@ -7,8 +7,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "target": "ES2019",
-    "lib": ["es2019"],
+    "target": "es2022",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
@@ -20,8 +19,11 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@entities/*": [
-        "src/database/entities/*"
+      "@custom-types": [
+        "src/@custom-types/index.d.ts"
+      ],
+      "@schemas/*": [
+        "src/database/schemas/*"
       ],
       "@common/*": [
         "src/common/*"

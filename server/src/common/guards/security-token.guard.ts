@@ -1,5 +1,11 @@
 /*external modules*/
-import { CanActivate, ExecutionContext, HttpException, Injectable, Logger } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { HttpStatus } from '@nestjs/common/enums';
 import { IpHelper } from '../helpers';
@@ -9,7 +15,10 @@ import { ProtectionService } from '../../modules/protection/protection.service';
 export class SecurityTokenGuard implements CanActivate {
   private readonly logger = new Logger(this.constructor.name);
 
-  constructor(private readonly protectionService: ProtectionService, private readonly ipHelper: IpHelper) {}
+  constructor(
+    private readonly protectionService: ProtectionService,
+    private readonly ipHelper: IpHelper,
+  ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     switch (context.getType()) {
@@ -27,13 +36,22 @@ export class SecurityTokenGuard implements CanActivate {
     return true;
   }
 
-  private async checkAccess(context: ExecutionContext, token: string | undefined, ip: string) {
+  private async checkAccess(
+    context: ExecutionContext,
+    token: string | undefined,
+    ip: string,
+  ) {
     if (!token) {
       this.logBadRequest(context, 'No X-Protection-Token header');
-      throw this.getException(context, 'Token is required', HttpStatus.FORBIDDEN);
+      throw this.getException(
+        context,
+        'Token is required',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
-    const { valid, error } = await this.protectionService.validateSecurityToken(token);
+    const { valid, error } =
+      await this.protectionService.validateSecurityToken(token);
     this.logger.debug('Security token validation result:', {
       valid,
       error,
@@ -45,7 +63,11 @@ export class SecurityTokenGuard implements CanActivate {
     }
   }
 
-  private getException(context: ExecutionContext, text: string, status: number) {
+  private getException(
+    context: ExecutionContext,
+    text: string,
+    status: number,
+  ) {
     const contextType = context.getType();
 
     if (contextType === 'http') {

@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import ms from 'ms';
+import * as ms from 'ms';
 
 export const configuration = () => {
   const server = {
@@ -7,26 +7,26 @@ export const configuration = () => {
   };
 
   const ports = {
-    http: parseInt(process.env.HTTP_PORT!, 10),
+    http: Number.parseInt(process.env.HTTP_PORT!, 10),
+    socket: Number.parseInt(process.env.APP_GETAWAY_PORT!, 10),
   };
 
-  const bll = {
-    resetPasswordLinkLive: ms(process.env.RESET_PASSWORD_LINK_LIVE!),
+  const security = {
+    corsWhiteList: JSON.parse(process.env.CORS_WHITE_LIST!),
+    cookiesOverHttps: Boolean(
+      Number.parseInt(process.env.COOKIES_OVER_HTTPS!, 10),
+    ),
   };
 
-  const postgres = {
-    host: process.env.POSTGRES_HOST,
-    port: parseInt(process.env.POSTGRES_PORT!, 10),
-    username: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    name: process.env.POSTGRES_DB_NAME,
-    url: '', // mongodb://username:password@host:port/database
+  const jwt = {
+    accessSecret: process.env.JWT_ACCESS_SECRET,
+    refreshSecret: process.env.JWT_REFRESH_SECRET,
+    accessExpires: process.env.JWT_ACCESS_EXPIRES,
+    refreshExpires: process.env.JWT_REFRESH_EXPIRES,
   };
-  postgres.url = `postgresql://${postgres.username}:${postgres.password}@${postgres.host}:${postgres.port}/${postgres.name}`;
 
-  const database = {
-    syncEntities: Boolean(Number(process.env.DATABASE_SYNC_ENTITIES!)),
-    autoLoadEntities: Boolean(Number(process.env.DATABASE_AUTO_LOAD_ENTITIES!)),
+  const logs = {
+    origin: Boolean(Number.parseInt(process.env.LOGS_ORIGIN_ENABLED!, 10)),
   };
 
   const ngrok = {
@@ -38,54 +38,72 @@ export const configuration = () => {
     webhook: process.env.TELEGRAM_WEBHOOK,
     token: process.env.TELEGRAM_TOKEN,
     botName: process.env.TELEGRAM_BOT_NAME,
-  };
-
-  const google = {
-    googleAppId: process.env.GOOGLE_APP_ID,
-    googleAppSecret: process.env.GOOGLE_APP_SECRET,
-  };
-
-  const facebook = {
-    facebookAppId: process.env.FACEBOOK_APP_ID,
-    facebookAppSecret: process.env.FACEBOOK_APP_SECRET,
+    botEnabled: Boolean(Number.parseInt(process.env.TELEGRAM_BOT_ENABLED!, 10)),
   };
 
   const redis = {
     host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT!, 10),
+    port: Number.parseInt(process.env.REDIS_PORT, 10),
+    url: process.env.REDIS_URL,
   };
 
-  const jwt = {
-    accessSecret: process.env.JWT_ACCESS_SECRET,
-    refreshSecret: process.env.JWT_REFRESH_SECRET,
-    accessExpires: process.env.JWT_ACCESS_EXPIRES,
-    refreshExpires: process.env.JWT_REFRESH_EXPIRES,
+  const redisCommander = {
+    port: Number.parseInt(process.env.REDIS_COMMANDER_PORT, 10),
+    url: process.env.REDIS_COMMANDER_URL,
+  };
+
+  const DB_NAME = process.env.DB_NAME;
+  const mongo = {
+    name: DB_NAME,
+    host: process.env.MONGO_HOST,
+    port: Number.parseInt(process.env.MONGO_PORT, 10),
+    username: process.env[`MONGO_${DB_NAME.toUpperCase()}_USERNAME`],
+    password: process.env[`MONGO_${DB_NAME.toUpperCase()}_PASSWORD`],
   };
 
   const protection = {
     securityTokenSecret: process.env.PROTECTION_SECURITY_TOKEN_SECRET,
-    securityTokenExpires: process.env.PROTECTION_SECURITY_TOKEN_EXPIRES,
+    securityTokenExpires: ms(process.env.PROTECTION_SECURITY_TOKEN_EXPIRES!),
   };
 
   const seed = {
     bootstrapCommands: JSON.parse(process.env.BOOTSTRAP_COMMANDS!),
   };
 
+  console.dir({
+    env: process.env.NODE_ENV,
+    isDev: ['dev', 'development'].includes(process.env.NODE_ENV!),
+    isProd: ['prod', 'production'].includes(process.env.NODE_ENV!),
+    bootstrapCommands: JSON.parse(process.env.BOOTSTRAP_COMMANDS),
+    server,
+    ports,
+    security,
+    jwt,
+    logs,
+    ngrok,
+    telegram,
+    redis,
+    redisCommander,
+    mongo,
+    protection,
+    seed,
+  }, { depth: 10 })
+
   return {
     env: process.env.NODE_ENV,
     isDev: ['dev', 'development'].includes(process.env.NODE_ENV!),
     isProd: ['prod', 'production'].includes(process.env.NODE_ENV!),
+    bootstrapCommands: JSON.parse(process.env.BOOTSTRAP_COMMANDS),
     server,
     ports,
-    bll,
-    ngrok,
-    google,
-    telegram,
-    facebook,
-    postgres,
-    database,
-    redis,
+    security,
     jwt,
+    logs,
+    ngrok,
+    telegram,
+    redis,
+    redisCommander,
+    mongo,
     protection,
     seed,
   };

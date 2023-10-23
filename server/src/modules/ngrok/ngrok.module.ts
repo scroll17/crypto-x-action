@@ -5,7 +5,9 @@ import { Global, Module } from '@nestjs/common';
 import { NgrokService } from './ngrok.service';
 /*controllers*/
 /*@common*/
+
 /*other*/
+
 @Global()
 @Module({
   providers: [NgrokService],

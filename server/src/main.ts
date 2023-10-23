@@ -1,21 +1,23 @@
+import * as cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { CommandModule, CommandService } from 'nestjs-command';
+import { CommandService } from 'nestjs-command';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { json } from 'express';
 
 const config = new DocumentBuilder()
-  .setTitle('BNB Nodes')
-  .setDescription('The BNB Nodes API description')
+  .setTitle('X')
+  .setDescription('The X server')
   .setVersion('1.0')
   .addBearerAuth()
-  .addBasicAuth()
   .build();
 
 async function bootstrap() {
   // INIT
   const app = await NestFactory.create(AppModule);
+  await app.init();
 
   // GET SERVICES
   const configService = app.get(ConfigService);
@@ -38,24 +40,24 @@ async function bootstrap() {
     }),
   );
 
+  // TOP-LEVEL MIDDLEWARE
+  app.use(cookieParser());
+  app.use(json({ limit: '50mb' }));
+
   // SWAGGER
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/docs', app, document);
 
   // EXEC COMMANDS
-  // HINT: it's direct call to avoid app.init() call
-  await app.get(CommandModule).onModuleInit();
-  await configService
-    .get('seed.bootstrapCommands')
-    .reduce(async (acc: Promise<void>, command: any) => {
-      await acc;
-      return commandService.exec(command);
-    }, Promise.resolve());
+  await configService.get('bootstrapCommands').reduce(async (acc, command) => {
+    await acc;
+    return commandService.exec(command);
+  }, Promise.resolve());
 
   // START
-  await app.listen(configService.getOrThrow('ports.http'), () => {
+  await app.listen(configService.get('port'), () => {
     const logger = new Logger('App');
-    logger.verbose(`Running on port: ${configService.get('ports.http')}`);
+    logger.verbose(`Running on port: ${configService.get('port')}`);
   });
 }
 

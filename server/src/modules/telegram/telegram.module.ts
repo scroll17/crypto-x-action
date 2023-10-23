@@ -1,24 +1,27 @@
 import { Module } from '@nestjs/common';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CryptoXBotModule } from './bots/crypto-x/crypto-x-bot.module';
+import { BotModule } from './bots/bot/bot.module';
 
 @Module({
   imports: [
-    CryptoXBotModule,
+    BotModule,
     TelegrafModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: function (configService: ConfigService) {
-        this.botName = configService.get('telegram.botName');
+        this.botName = configService.getOrThrow<string>('telegram.botName');
 
+        const botEnabled = configService.getOrThrow<boolean>(
+          'telegram.botEnabled',
+        );
         return {
           token: configService.getOrThrow('telegram.token'),
-          include: [CryptoXBotModule],
+          include: botEnabled ? [BotModule] : [],
         };
       },
     }),
   ],
-  exports: [CryptoXBotModule],
+  exports: [BotModule],
 })
 export class TelegramModule {}
