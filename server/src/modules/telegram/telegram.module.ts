@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { BotModule } from './bots/bot/bot.module';
+import { ActionXBotModule } from './bots/action-x/action-x-bot.module';
 
 @Module({
   imports: [
-    BotModule,
+    ActionXBotModule,
     TelegrafModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -17,11 +17,11 @@ import { BotModule } from './bots/bot/bot.module';
         );
         return {
           token: configService.getOrThrow('telegram.token'),
-          include: botEnabled ? [BotModule] : [],
+          include: botEnabled ? [ActionXBotModule] : [],
         };
       },
     }),
   ],
-  exports: [BotModule],
+  exports: [ActionXBotModule],
 })
 export class TelegramModule {}

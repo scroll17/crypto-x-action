@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { BotService } from './bot.service';
-import { BotUpdate } from './bot.update';
+import { ActionXBotService } from './action-x-bot.service';
+import { ActionXBotUpdate } from './action-x-bot.update';
 import { ProtectionModule } from '../../../protection/protection.module';
 import {
   MarkdownHelper,
@@ -21,12 +21,12 @@ import { User, UserSchema } from '@schemas/user';
     ]),
   ],
   providers: [
-    BotService,
-    BotUpdate,
+    ActionXBotService,
+    ActionXBotUpdate,
     MarkdownHelper,
     TelegrafMessageHelper,
     TelegramNotificationBotService,
   ],
-  exports: [BotService, TelegramNotificationBotService, MarkdownHelper],
+  exports: [ActionXBotService, TelegramNotificationBotService, MarkdownHelper],
 })
-export class BotModule {}
+export class ActionXBotModule {}

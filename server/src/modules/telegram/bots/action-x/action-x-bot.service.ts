@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModel } from '@schemas/user';
 
 @Injectable()
-export class BotService {
+export class ActionXBotService {
   private readonly logger = new Logger(this.constructor.name);
 
   private redis: Redis;

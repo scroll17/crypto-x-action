@@ -12,7 +12,7 @@ import {
 } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { Logger, UseFilters, UseInterceptors } from '@nestjs/common';
-import { BotService } from './bot.service';
+import { ActionXBotService } from './action-x-bot.service';
 import { TelegrafMessageLoggingInterceptor } from '@common/telegram/interceptors';
 import { TelegrafExceptionFilter } from '@common/telegram/filters';
 import {
@@ -25,13 +25,13 @@ import { MarkupCallbackButtonName } from '@common/telegram/enums';
 @Update()
 @UseInterceptors(TelegrafMessageLoggingInterceptor)
 @UseFilters(TelegrafExceptionFilter)
-export class BotUpdate {
+export class ActionXBotUpdate {
   private readonly logger = new Logger(this.constructor.name);
 
   constructor(
     @InjectBot()
     private readonly bot: Telegraf<Context>,
-    private readonly cryptoXBotService: BotService,
+    private readonly actionXBotService: ActionXBotService,
   ) {}
 
   @Start()
@@ -79,7 +79,7 @@ export class BotUpdate {
   @Command('get_server_url')
   @TelegrafAuthUser()
   async onGetServerUrlCommand(@Ctx() ctx: Context): Promise<void> {
-    const message = await this.cryptoXBotService.getServerUrl();
+    const message = await this.actionXBotService.getServerUrl();
     await ctx.replyWithMarkdown(message);
   }
 
@@ -89,7 +89,7 @@ export class BotUpdate {
     @TelegrafCurrentUser() tgUser: ITelegramUser,
     @Ctx() ctx: Context,
   ): Promise<void> {
-    const message = await this.cryptoXBotService.getSecurityToken(
+    const message = await this.actionXBotService.getSecurityToken(
       ctx.message!.from.id,
     );
     await ctx.replyWithMarkdown(message);
@@ -98,7 +98,7 @@ export class BotUpdate {
   @Command('refresh_security_token')
   @TelegrafAuthUser()
   async onRefreshSecurityTokenCommand(@Ctx() ctx: Context): Promise<void> {
-    const message = await this.cryptoXBotService.refreshSecurityToken(
+    const message = await this.actionXBotService.refreshSecurityToken(
       ctx.message!.from.id,
     );
     await ctx.replyWithMarkdown(message);
