@@ -1,4 +1,5 @@
 export interface IDataInSecurityToken {
+  sub: string; // userId
   token: string;
-  userId: number; // telegramId
+  telegramId: number;
 }

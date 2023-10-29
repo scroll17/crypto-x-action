@@ -26,6 +26,7 @@ import { LoggingInterceptor } from '@common/interceptors';
 import { ProtectionModule } from './modules/protection/protection.module';
 import { DebankModule } from './modules/integrations/debank/debank.module';
 import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { UserModule } from './modules/user/user.module';
     NgrokModule, // global
     JobModule, // global
     ProtectionModule, // global
+    AuthModule,
     TelegramModule,
     AdminModule,
     UserModule,
@@ -88,7 +90,7 @@ export class AppModule implements NestModule {
 
   configure(consumer: MiddlewareConsumer) {
     const logsEnabled = this.configService.get('logs.origin');
-    const whitelist = this.configService.get('cors.whiteList');
+    const whitelist = this.configService.get('security.corsWhiteList');
 
     consumer
       .apply(

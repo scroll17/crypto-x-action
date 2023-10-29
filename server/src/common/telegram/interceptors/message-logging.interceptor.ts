@@ -1,10 +1,4 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  Logger,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { TelegrafExecutionContext } from 'nestjs-telegraf';
 import { Context } from 'telegraf';
@@ -17,12 +11,10 @@ export class TelegrafMessageLoggingInterceptor implements NestInterceptor {
   constructor(private messageHelper: TelegrafMessageHelper) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const telegramContext =
-      TelegrafExecutionContext.create(context).getContext<Context>();
+    const telegramContext = TelegrafExecutionContext.create(context).getContext<Context>();
 
     try {
-      const { user, data } =
-        this.messageHelper.getTelegramUserFromCtx(telegramContext);
+      const { user, data } = this.messageHelper.getTelegramUserFromCtx(telegramContext);
 
       this.logger.verbose('Telegram Bot Message:', {
         from: {
@@ -35,6 +27,7 @@ export class TelegrafMessageLoggingInterceptor implements NestInterceptor {
 
       return next.handle();
     } catch {
+      this.logger.warn('Unsupported message type', { type: telegramContext.updateType });
       return next.handle();
     }
   }

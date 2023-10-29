@@ -61,7 +61,7 @@ export const configuration = () => {
 
   const protection = {
     securityTokenSecret: process.env.PROTECTION_SECURITY_TOKEN_SECRET,
-    securityTokenExpires: ms(process.env.PROTECTION_SECURITY_TOKEN_EXPIRES!),
+    securityTokenExpires: process.env.PROTECTION_SECURITY_TOKEN_EXPIRES,
   };
 
   const seed = {

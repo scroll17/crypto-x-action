@@ -9,11 +9,14 @@ import { ConfigService } from '@nestjs/config';
   imports: [
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {
+        const secret = configService.getOrThrow('protection.securityTokenSecret');
+        const expiresIn = configService.getOrThrow('protection.securityTokenExpires');
+
         return {
           global: false,
-          secret: configService.get('protection.securityTokenSecret'),
+          secret: secret,
           signOptions: {
-            expiresIn: configService.get('protection.securityTokenExpires'),
+            expiresIn: expiresIn,
           },
         };
       },

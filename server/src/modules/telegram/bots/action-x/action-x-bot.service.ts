@@ -58,8 +58,12 @@ export class ActionXBotService {
       return `${tokenMsg}: ${tokenText}`;
     }
 
-    const newSecurityToken =
-      await this.protectionService.generateSecurityToken(telegramUserId);
+    const user = await this.getUserByTelegramId(telegramUserId);
+
+    const newSecurityToken = await this.protectionService.generateSecurityToken(
+      user._id.toString(),
+      telegramUserId,
+    );
     this.lastSecurityToken = newSecurityToken;
 
     const tokenMsg = this.markdownHelper.bold('Token');
@@ -71,8 +75,12 @@ export class ActionXBotService {
   public async refreshSecurityToken(telegramUserId: number) {
     this.logger.debug('Refresh security token');
 
-    const newSecurityToken =
-      await this.protectionService.generateSecurityToken(telegramUserId);
+    const user = await this.getUserByTelegramId(telegramUserId);
+
+    const newSecurityToken = await this.protectionService.generateSecurityToken(
+      user._id.toString(),
+      telegramUserId,
+    );
 
     const tokenMsg = this.markdownHelper.bold('Token');
     const tokenText = this.markdownHelper.monospaced(newSecurityToken);

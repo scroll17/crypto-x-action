@@ -13,16 +13,13 @@ export class TelegrafHasBotAccessGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const tgCtx =
-      TelegrafExecutionContext.create(context).getContext<Context>();
+    const tgCtx = TelegrafExecutionContext.create(context).getContext<Context>();
 
     const { user: tgUser } = this.messageHelper.getTelegramUserFromCtx(tgCtx);
 
     const user = await this.userModel
       .findOne({
-        where: {
-          telegramId: tgUser.telegramId,
-        },
+        telegramId: tgUser.telegramId,
       })
       .exec();
     if (!user) {

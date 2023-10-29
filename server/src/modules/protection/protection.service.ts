@@ -23,7 +23,7 @@ export class ProtectionService {
     this.redis = this.redisService.getDefaultConnection();
   }
 
-  public async generateSecurityToken(telegramId: number) {
+  public async generateSecurityToken(userId: string, telegramId: number) {
     const securityTokenLiveTime = Math.floor(
       ms(
         this.configService.getOrThrow<string>(
@@ -35,18 +35,15 @@ export class ProtectionService {
 
     this.logger.debug('Generate new security token', {
       liveTime: securityTokenLiveTime,
-      userId: telegramId,
+      userId: userId,
     });
 
-    await this.redis.setex(
-      RedisProtection.SecurityToken,
-      securityTokenLiveTime,
-      tokenStr,
-    );
+    await this.redis.setex(RedisProtection.SecurityToken, securityTokenLiveTime, tokenStr);
 
     const securityTokenPayload: IDataInSecurityToken = {
+      sub: userId,
       token: tokenStr,
-      userId: telegramId,
+      telegramId: telegramId,
     };
     return await this.jwtService.signAsync(securityTokenPayload);
   }
@@ -57,8 +54,7 @@ export class ProtectionService {
     });
 
     try {
-      const securityToken =
-        await this.jwtService.verifyAsync<IDataInSecurityToken>(token);
+      const securityToken = await this.jwtService.verifyAsync<IDataInSecurityToken>(token);
       if (!securityToken) {
         return {
           valid: false,
@@ -84,10 +80,7 @@ export class ProtectionService {
       if (securityToken.token !== localToken) {
         return {
           valid: false,
-          error: new HttpException(
-            'Passed Token is wrong',
-            HttpStatus.FORBIDDEN,
-          ),
+          error: new HttpException('Passed Token is wrong', HttpStatus.FORBIDDEN),
         };
       }
 
@@ -98,10 +91,7 @@ export class ProtectionService {
     } catch {
       return {
         valid: false,
-        error: new HttpException(
-          'Token malformed or expired',
-          HttpStatus.BAD_REQUEST,
-        ),
+        error: new HttpException('Token malformed or expired', HttpStatus.BAD_REQUEST),
       };
     }
   }

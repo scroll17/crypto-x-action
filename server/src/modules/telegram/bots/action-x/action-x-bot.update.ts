@@ -39,7 +39,7 @@ export class ActionXBotUpdate {
     return `Бот запущен`;
   }
 
-  // @On('message')
+  @On('message')
   async onMessage(
     @Ctx() ctx: Context,
     @Next() next: () => Promise<void>,

@@ -18,13 +18,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     PassportModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {
-        const secret = configService.get('jwtToken.secret');
-        const expiresIn = configService.get('jwtToken.expireMinutes');
+        const secret = configService.getOrThrow('jwt.accessSecret');
+        const expiresIn = configService.getOrThrow('jwt.accessExpires');
 
         return {
           secret,
           signOptions: {
-            expiresIn: `${expiresIn}m`,
+            expiresIn: expiresIn,
           },
         };
       },

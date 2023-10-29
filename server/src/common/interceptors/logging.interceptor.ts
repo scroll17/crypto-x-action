@@ -1,11 +1,5 @@
 /*external modules*/
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  Logger,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 /*modules*/
@@ -24,15 +18,9 @@ export class LoggingInterceptor implements NestInterceptor {
 
   constructor(private readonly ipHelper: IpHelper) {}
 
-  public intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<unknown> {
+  public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     let token: string;
-    let trace: Record<
-      string,
-      string | number | Date | Record<string, unknown>
-    > = {};
+    let trace: Record<string, string | number | Date | Record<string, unknown>> = {};
 
     switch (context.getType()) {
       case 'http': {
@@ -86,6 +74,9 @@ export class LoggingInterceptor implements NestInterceptor {
 
         break;
       }
+      default: {
+        return next.handle();
+      }
     }
 
     this.logger.verbose(token, trace);
@@ -94,13 +85,7 @@ export class LoggingInterceptor implements NestInterceptor {
     return next
       .handle()
       .pipe(
-        tap(() =>
-          this.logger.debug(
-            `[${token}] Execution time: ${((Date.now() - now) / 1000).toFixed(
-              2,
-            )}s`,
-          ),
-        ),
+        tap(() => this.logger.debug(`[${token}] Execution time: ${((Date.now() - now) / 1000).toFixed(2)}s`)),
       );
   }
 }
