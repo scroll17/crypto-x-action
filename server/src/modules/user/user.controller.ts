@@ -1,28 +1,27 @@
-import { Controller, Get, HttpCode, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiForbiddenResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiForbiddenResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '@common/guards';
-import { DisableController } from '@common/decorators';
-import { UserEntity } from '@schemas/user';
+import { UserDocument, UserEntity } from '@schemas/user';
+import { CurrentUser } from '@common/decorators';
 
 @Controller('user')
 @ApiTags('User')
-@DisableController()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/me')
   @UseGuards(JwtAuthGuard)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user.' })
-  @ApiOkResponse({
-    status: 200,
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: 'Current user.',
     type: UserEntity,
   })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getMe() {
-    return {};
+  async getMe(@CurrentUser() user: UserDocument) {
+    return user;
   }
 }

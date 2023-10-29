@@ -1,6 +1,6 @@
 /*external modules*/
 import * as crypto from 'node:crypto';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

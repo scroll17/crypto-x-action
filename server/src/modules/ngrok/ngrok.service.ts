@@ -1,5 +1,5 @@
 /*external modules*/
-import * as _ from 'lodash';
+import _ from 'lodash';
 import * as path from 'node:path';
 import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';

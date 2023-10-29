@@ -1,5 +1,5 @@
 /*external modules*/
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { Injectable } from '@nestjs/common';
 import { ITelegramUser } from '@common/types';
 import { Context } from 'telegraf';

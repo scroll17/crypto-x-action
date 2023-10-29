@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import _ from 'lodash';
 import * as zlib from 'node:zlib';
 import * as util from 'node:util';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';

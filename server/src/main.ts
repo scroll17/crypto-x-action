@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { CommandService } from 'nestjs-command';
+import { CommandModule, CommandService } from 'nestjs-command';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { json } from 'express';
 
@@ -17,10 +17,12 @@ const config = new DocumentBuilder()
 async function bootstrap() {
   // INIT
   const app = await NestFactory.create(AppModule);
-  await app.init();
 
   // GET SERVICES
   const configService = app.get(ConfigService);
+
+  // HINT: it's direct call to avoid app.init() call
+  await app.get(CommandModule).onModuleInit();
   const commandService = app.get(CommandService);
 
   // SET VALIDATION
@@ -49,10 +51,9 @@ async function bootstrap() {
   SwaggerModule.setup('/docs', app, document);
 
   // EXEC COMMANDS
-  await configService.getOrThrow('bootstrapCommands').reduce(async (acc: Promise<unknown>, command: string) => {
-    await acc;
-    return commandService.exec(command as unknown as string[]);
-  }, Promise.resolve());
+  for (const command of configService.getOrThrow('bootstrapCommands')) {
+    await commandService.exec([command]);
+  }
 
   // START
   const PORT = configService.getOrThrow<number>('ports.http');
