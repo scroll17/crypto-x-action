@@ -10,20 +10,17 @@ import {
 import { Observable, throwError, timeout, TimeoutError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
+import { DecoratorKeys } from '@common/enums';
 
 @Injectable()
 export class TimeoutInterceptor implements NestInterceptor {
   constructor(private reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const time = this.reflector.get<number>('timeout', context.getHandler());
+    const time = this.reflector.get<number>(DecoratorKeys.Timeout, context.getHandler());
     if (!time) {
       return throwError(
-        () =>
-          new HttpException(
-            'Invalid using of Timeout Interceptor',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          ),
+        () => new HttpException('Invalid using of Timeout Interceptor', HttpStatus.INTERNAL_SERVER_ERROR),
       );
     }
 
