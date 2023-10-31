@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserEntity, UserModel } from '@schemas/user';
+import { User, UserDocument, UserEntity, UserModel } from '@schemas/user';
 import { FindUserDto } from './dto';
 import { PaginateResultEntity } from '@common/entities';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UserService {
@@ -24,5 +25,18 @@ export class UserService {
     });
 
     return users;
+  }
+
+  public async getById(id: Types.ObjectId): Promise<UserDocument> {
+    this.logger.debug('Get user by id', {
+      id,
+    });
+
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return user;
   }
 }
