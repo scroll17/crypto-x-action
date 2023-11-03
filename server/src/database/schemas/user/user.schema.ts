@@ -27,6 +27,9 @@ export class User {
   telegramId: number;
 
   @Prop({ type: Boolean, required: true })
+  blocked: boolean;
+
+  @Prop({ type: Boolean, required: true })
   hasBotAccess: boolean;
 
   @Prop({ type: Boolean, required: true })

@@ -34,6 +34,13 @@ export class UserEntity implements User {
   @ApiProperty({
     type: Boolean,
     example: true,
+    description: 'Is user has access to the system',
+  })
+  blocked: boolean;
+
+  @ApiProperty({
+    type: Boolean,
+    example: true,
     description: 'Is user has access to bot',
   })
   hasBotAccess: boolean;

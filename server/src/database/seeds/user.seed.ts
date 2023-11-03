@@ -17,8 +17,7 @@ export class UserSeed {
 
   @Command({ command: 'create:users', describe: 'create users' })
   async createBulk() {
-    const usersSeed =
-      this.configService.getOrThrow<Array<TUserSeed>>('usersSeed');
+    const usersSeed = this.configService.getOrThrow<Array<TUserSeed>>('usersSeed');
 
     this.logger.debug('Generating bulk of Users records');
     await Promise.all(
@@ -46,6 +45,7 @@ export class UserSeed {
         });
         user = await this.userModel.create({
           ...userSeed,
+          blocked: false,
         });
 
         this.logger.verbose('Created Users', {
