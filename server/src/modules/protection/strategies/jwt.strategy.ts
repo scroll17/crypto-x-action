@@ -41,6 +41,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
     });
 
+    // TODO: check for secret in Redis
+
+
     return user;
   }
 }
