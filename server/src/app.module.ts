@@ -26,7 +26,6 @@ import { LoggingInterceptor } from '@common/interceptors';
 import { ProtectionModule } from './modules/protection/protection.module';
 import { DebankModule } from './modules/integrations/debank/debank.module';
 import { UserModule } from './modules/user/user.module';
-import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -67,7 +66,6 @@ import { AuthModule } from './modules/auth/auth.module';
     NgrokModule, // global
     JobModule, // global
     ProtectionModule, // global
-    AuthModule,
     TelegramModule,
     AdminModule,
     UserModule,
