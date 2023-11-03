@@ -16,13 +16,6 @@ export const configuration = () => {
     cookiesOverHttps: Boolean(Number.parseInt(process.env.COOKIES_OVER_HTTPS!, 10)),
   };
 
-  const jwt = {
-    accessSecret: process.env.JWT_ACCESS_SECRET,
-    refreshSecret: process.env.JWT_REFRESH_SECRET,
-    accessExpires: process.env.JWT_ACCESS_EXPIRES,
-    refreshExpires: process.env.JWT_REFRESH_EXPIRES,
-  };
-
   const logs = {
     origin: Boolean(Number.parseInt(process.env.LOGS_ORIGIN_ENABLED!, 10)),
   };
@@ -60,8 +53,12 @@ export const configuration = () => {
   };
 
   const protection = {
-    securityTokenSecret: process.env.PROTECTION_SECURITY_TOKEN_SECRET,
-    securityTokenExpires: process.env.PROTECTION_SECURITY_TOKEN_EXPIRES,
+    userTokenSecret: process.env.PROTECTION_USER_TOKEN_SECRET,
+    userTokenExpires: process.env.PROTECTION_USER_TOKEN_EXPIRES,
+    userTokenHeader: process.env.PROTECTION_USER_TOKEN_HEADER,
+    signatureSecret: process.env.PROTECTION_SIGNATURE_SECRET,
+    signatureHeader: process.env.PROTECTION_SIGNATURE_HEADER,
+    signatureTimeTolerance: ms(process.env.PROTECTION_SIGNATURE_TIME_TOLERANCE!),
   };
 
   const seed = {
@@ -76,7 +73,6 @@ export const configuration = () => {
     server,
     ports,
     security,
-    jwt,
     logs,
     ngrok,
     telegram,
