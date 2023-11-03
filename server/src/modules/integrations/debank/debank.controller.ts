@@ -1,11 +1,9 @@
 import { Controller, Get, HttpCode, ParseBoolPipe, Query, UseGuards } from '@nestjs/common';
 import { ApiForbiddenResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { DebankService } from './debank.service';
-import { SecurityTokenGuard } from '@common/guards';
 
 @Controller('integrations/debank')
 @ApiTags('Integrations', 'Debank')
-@UseGuards(SecurityTokenGuard)
 export class DebankController {
   constructor(private readonly debankService: DebankService) {}
 

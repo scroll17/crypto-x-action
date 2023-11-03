@@ -5,8 +5,13 @@ import { RedisService } from '../redis/redis.service';
 import { DataGenerateHelper } from '@common/helpers';
 import { RedisProtection } from '@common/enums';
 import { JwtService } from '@nestjs/jwt';
-import { IDataInSecurityToken } from '@common/types/protection';
 import Redis from 'ioredis';
+
+interface IDataInSecurityToken {
+  sub: string; // userId
+  token: string;
+  telegramId: number;
+}
 
 @Injectable()
 export class ProtectionService {

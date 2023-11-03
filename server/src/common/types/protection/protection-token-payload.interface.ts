@@ -1,4 +1,4 @@
-export interface IDataInSecurityToken {
+export interface IProtectionTokenPayload {
   secret: string;
   userId: number;
   email: string;
