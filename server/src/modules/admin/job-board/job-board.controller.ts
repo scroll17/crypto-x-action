@@ -1,16 +1,17 @@
 import { Controller, HttpCode, Post, UseInterceptors } from '@nestjs/common';
 import { LoggingInterceptor } from '@common/interceptors';
 import { JobBoardService } from '../../job/board/job-board.service';
-import { Auth } from '@common/decorators';
+import { AuthUser, DisableController } from '@common/decorators';
 import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
 
 @Controller('/admin/jobs')
 @UseInterceptors(LoggingInterceptor)
+@DisableController()
 export class JobBoardController {
   constructor(private readonly jobBoardService: JobBoardService) {}
 
   @Post('/test-audio')
-  @Auth()
+  @AuthUser()
   @HttpCode(201)
   @ApiOperation({ summary: 'Start new job.' })
   @ApiCreatedResponse({

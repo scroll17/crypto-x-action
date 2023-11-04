@@ -20,12 +20,13 @@ import { RedisModule } from './modules/redis/redis.module';
 import { JobModule } from './modules/job/job.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NgrokModule } from './modules/ngrok/ngrok.module';
-import { IpHelper } from '@common/helpers';
+import { DevEndpointHelper, IpHelper } from '@common/helpers';
 import { AppGetaway } from './app.getaway';
 import { LoggingInterceptor } from '@common/interceptors';
 import { ProtectionModule } from './modules/protection/protection.module';
 import { DebankModule } from './modules/integrations/debank/debank.module';
 import { UserModule } from './modules/user/user.module';
+import { ProtectionMiddleware } from '@common/middlewares';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { UserModule } from './modules/user/user.module';
   controllers: [],
   providers: [
     IpHelper,
+    DevEndpointHelper,
     AppGetaway,
     {
       provide: APP_INTERCEPTOR,
@@ -122,6 +124,7 @@ export class AppModule implements NestModule {
             }
           },
         }),
+        ProtectionMiddleware,
       )
       .exclude({ path: '/admin/jobs/api/queues', method: RequestMethod.ALL })
       .forRoutes({ path: '*', method: RequestMethod.ALL });
