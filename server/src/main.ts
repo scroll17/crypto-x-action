@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { CommandModule, CommandService } from 'nestjs-command';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { json } from 'express';
+import basicAuth from 'express-basic-auth';
 
 const config = new DocumentBuilder()
   .setTitle('X')
@@ -47,6 +48,16 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
 
   // SWAGGER
+  app.use(
+    ['/docs', '/docs-json'],
+    basicAuth({
+      challenge: true,
+      users: {
+        [configService.getOrThrow('swagger.user')]: configService.getOrThrow('swagger.password'),
+      },
+    }),
+  );
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/docs', app, document);
 
