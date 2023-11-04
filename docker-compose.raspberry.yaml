@@ -1,4 +1,4 @@
-version: "3"
+version: "3.5"
 
 services:
   api:
@@ -8,6 +8,7 @@ services:
       dockerfile: ./server/Dockerfile-prod
     ports:
       - "4000:4000"
+      - "4001:4001"
     environment:
       HTTP_PORT: 4000
       APP_GETAWAY_PORT: 5051
@@ -23,6 +24,7 @@ services:
         condition: service_healthy
     links:
       - database:database
+      - redis:redis
     volumes:
       - /home/app/x_server/node_modules
     restart: "always"
@@ -34,7 +36,7 @@ services:
     env_file:
       - ./mongo/.mongo.env
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - ./mongo/db:/data/db:rw
     #      - ./mongo/scripts/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh:ro
