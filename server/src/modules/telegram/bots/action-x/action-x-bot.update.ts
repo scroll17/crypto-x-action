@@ -1,29 +1,13 @@
-import _ from 'lodash';
-import {
-  Action,
-  Command,
-  Ctx,
-  Help,
-  InjectBot,
-  Next,
-  On,
-  Start,
-  Update,
-} from 'nestjs-telegraf';
+import { Command, Ctx, Help, InjectBot, Next, On, Start, Update } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { ActionXBotService } from './action-x-bot.service';
-import { TelegrafMessageLoggingInterceptor } from '@common/telegram/interceptors';
 import { TelegrafExceptionFilter } from '@common/telegram/filters';
-import {
-  TelegrafAuthUser,
-  TelegrafCurrentUser,
-} from '@common/telegram/decorators';
+import { TelegrafAuthUser, TelegrafCurrentUser } from '@common/telegram/decorators';
 import { ITelegramUser } from '@common/types';
-import { MarkupCallbackButtonName } from '@common/telegram/enums';
 
 @Update()
-@UseInterceptors(TelegrafMessageLoggingInterceptor)
+@UseInterceptors()
 @UseFilters(TelegrafExceptionFilter)
 export class ActionXBotUpdate {
   private readonly logger = new Logger(this.constructor.name);
@@ -40,23 +24,7 @@ export class ActionXBotUpdate {
   }
 
   @On('message')
-  async onMessage(
-    @Ctx() ctx: Context,
-    @Next() next: () => Promise<void>,
-  ): Promise<void> {
-    const message = (ctx.update as any)['message'];
-
-    this.logger.log('Telegram Bot Message:', {
-      from: {
-        id: message.from.id,
-        firstName: message.from.first_name,
-        username: message.from.username,
-      },
-      data: {
-        text: message.text,
-      },
-    });
-
+  async onMessage(@Ctx() ctx: Context, @Next() next: () => Promise<void>): Promise<void> {
     return next();
   }
 
@@ -65,12 +33,11 @@ export class ActionXBotUpdate {
   async onHelp(): Promise<string> {
     const commands = [
       '/get_server_url - Получить URL сервера',
-      '/get_security_token - Получить токен аутентификации',
-      '/refresh_security_token - Обновить токен аутентификации',
+      '/set_user_secret - Установить секрет для аутентификации',
     ].join('\n');
     const description = [
-      'Токен аутентификации используеться в таблице',
-      'URL сервера также используеться в таблице',
+      'Токен аутентификации используеться для установления пользователя делающего запрос',
+      'URL сервера используеться в Getaway server',
     ].join('\n');
 
     return `${commands}\n\n${description}`;
@@ -80,51 +47,16 @@ export class ActionXBotUpdate {
   @TelegrafAuthUser()
   async onGetServerUrlCommand(@Ctx() ctx: Context): Promise<void> {
     const message = await this.actionXBotService.getServerUrl();
-    await ctx.replyWithMarkdown(message);
+    await ctx.replyWithMarkdownV2(message);
   }
 
-  @Command('get_security_token')
+  @Command('set_user_secret')
   @TelegrafAuthUser()
-  async onGetSecurityTokenCommand(
+  async onSetUserSecretCommand(
     @TelegrafCurrentUser() tgUser: ITelegramUser,
     @Ctx() ctx: Context,
   ): Promise<void> {
-    const message = await this.actionXBotService.getSecurityToken(
-      ctx.message!.from.id,
-    );
-    await ctx.replyWithMarkdown(message);
-  }
-
-  @Command('refresh_security_token')
-  @TelegrafAuthUser()
-  async onRefreshSecurityTokenCommand(@Ctx() ctx: Context): Promise<void> {
-    const message = await this.actionXBotService.refreshSecurityToken(
-      ctx.message!.from.id,
-    );
-    await ctx.replyWithMarkdown(message);
-  }
-
-  // Note: priority - 1
-  @Action(new RegExp(MarkupCallbackButtonName.DisapproveAccessToken))
-  @TelegrafAuthUser()
-  async disapproveAccessTokenAction(
-    @TelegrafCurrentUser() tgUser: ITelegramUser,
-    @Ctx() ctx: Context,
-  ) {
-    await ctx.answerCbQuery();
-
-    await ctx.reply('Token removed');
-  }
-
-  // Note: priority - 2
-  @Action(new RegExp(MarkupCallbackButtonName.ApproveAccessToken))
-  @TelegrafAuthUser()
-  async approveAccessTokenAction(
-    @TelegrafCurrentUser() tgUser: ITelegramUser,
-    @Ctx() ctx: Context,
-  ) {
-    await ctx.answerCbQuery();
-
-    await ctx.reply('Token confirmed');
+    // const message = await this.actionXBotService.getSecurityToken(ctx.message!.from.id);
+    // await ctx.replyWithMarkdown(message);
   }
 }

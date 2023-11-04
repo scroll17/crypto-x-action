@@ -14,7 +14,6 @@ export class ActionXBotService {
   private readonly logger = new Logger(this.constructor.name);
 
   private redis: Redis;
-  private lastSecurityToken: string | null = null;
 
   constructor(
     private readonly configService: ConfigService,
@@ -46,45 +45,5 @@ export class ActionXBotService {
     const urlText = this.markdownHelper.monospaced(url);
 
     return `${urlMsg}: ${urlText}`;
-  }
-
-  public async getSecurityToken(telegramUserId: number) {
-    if (this.lastSecurityToken) {
-      this.logger.debug('Return old security token');
-
-      const tokenMsg = this.markdownHelper.bold('Token');
-      const tokenText = this.markdownHelper.monospaced(this.lastSecurityToken);
-
-      return `${tokenMsg}: ${tokenText}`;
-    }
-
-    const user = await this.getUserByTelegramId(telegramUserId);
-
-    const newSecurityToken = await this.protectionService.generateSecurityToken(
-      user._id.toString(),
-      telegramUserId,
-    );
-    this.lastSecurityToken = newSecurityToken;
-
-    const tokenMsg = this.markdownHelper.bold('Token');
-    const tokenText = this.markdownHelper.monospaced(newSecurityToken);
-
-    return `${tokenMsg}: ${tokenText}`;
-  }
-
-  public async refreshSecurityToken(telegramUserId: number) {
-    this.logger.debug('Refresh security token');
-
-    const user = await this.getUserByTelegramId(telegramUserId);
-
-    const newSecurityToken = await this.protectionService.generateSecurityToken(
-      user._id.toString(),
-      telegramUserId,
-    );
-
-    const tokenMsg = this.markdownHelper.bold('Token');
-    const tokenText = this.markdownHelper.monospaced(newSecurityToken);
-
-    return `${tokenMsg}: ${tokenText}`;
   }
 }

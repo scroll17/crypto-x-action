@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ActionXBotModule } from './bots/action-x/action-x-bot.module';
+import { telegrafMessageLoggingMiddleware } from '@common/telegram/middlewares';
 
 @Module({
   imports: [
@@ -12,12 +13,11 @@ import { ActionXBotModule } from './bots/action-x/action-x-bot.module';
       useFactory: function (configService: ConfigService) {
         this.botName = configService.getOrThrow<string>('telegram.botName');
 
-        const botEnabled = configService.getOrThrow<boolean>(
-          'telegram.botEnabled',
-        );
+        const botEnabled = configService.getOrThrow<boolean>('telegram.botEnabled');
         return {
           token: configService.getOrThrow('telegram.token'),
           include: botEnabled ? [ActionXBotModule] : [],
+          middlewares: [telegrafMessageLoggingMiddleware],
         };
       },
     }),

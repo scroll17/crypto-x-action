@@ -11,6 +11,9 @@ export class TelegrafMessageLoggingInterceptor implements NestInterceptor {
   constructor(private messageHelper: TelegrafMessageHelper) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    // TODO: skip other because moved to Middleware
+    return next.handle();
+
     const telegramContext = TelegrafExecutionContext.create(context).getContext<Context>();
 
     try {

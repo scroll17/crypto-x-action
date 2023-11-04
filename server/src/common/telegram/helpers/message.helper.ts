@@ -43,9 +43,7 @@ export class TelegrafMessageHelper {
         };
       }
       default: {
-        throw new TelegrafException(
-          `Unsupported updateType = "${context.updateType}"`,
-        );
+        throw new TelegrafException(`Unsupported updateType = "${context.updateType}"`);
       }
     }
   }
