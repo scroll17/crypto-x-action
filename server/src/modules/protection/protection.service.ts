@@ -1,22 +1,20 @@
-import ms from 'ms';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
 import { DataGenerateHelper } from '@common/helpers';
-import { RedisProtection } from '@common/enums';
 import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
+import {Request} from "express";
+import {IClientMetadata} from "@common/types";
+import url from "node:url";
+import crypto from "node:crypto";
 
-interface IDataInSecurityToken {
-  sub: string; // userId
-  token: string;
-  telegramId: number;
-}
 
 @Injectable()
 export class ProtectionService {
   private readonly logger = new Logger(this.constructor.name);
 
+  private readonly CLIENT_METADATA_HEADER = 'x-client-metadata';
   private readonly redis: Redis;
 
   constructor(
@@ -28,80 +26,68 @@ export class ProtectionService {
     this.redis = this.redisService.getDefaultConnection();
   }
 
-  public async generateSecurityToken(userId: string, telegramId: number) {
-    const securityTokenLiveTime = Math.floor(
-      ms(
-        this.configService.getOrThrow<string>(
-          'protection.securityTokenExpires',
-        ),
-      ) / 1000,
-    );
-    const tokenStr = this.dataGenerateHelper.randomHEX(16);
+  private parseSignature(rawSignature: string) {
+    const [timestampS, signatureS] = rawSignature.split(',');
 
-    this.logger.debug('Generate new security token', {
-      liveTime: securityTokenLiveTime,
-      userId: userId,
-    });
+    const [t, timestamp] = timestampS.split('=');
+    const [scheme, signature] = signatureS.split('=');
 
-    await this.redis.setex(RedisProtection.SecurityToken, securityTokenLiveTime, tokenStr);
-
-    const securityTokenPayload: IDataInSecurityToken = {
-      sub: userId,
-      token: tokenStr,
-      telegramId: telegramId,
-    };
-    return await this.jwtService.signAsync(securityTokenPayload);
-  }
-
-  public async validateSecurityToken(token: string) {
-    this.logger.debug('Validate security token', {
-      token,
-    });
-
-    try {
-      const securityToken = await this.jwtService.verifyAsync<IDataInSecurityToken>(token);
-      if (!securityToken) {
-        return {
-          valid: false,
-          error: new HttpException('Token is invalid', HttpStatus.BAD_REQUEST),
-        };
-      }
-
-      this.logger.debug('Security token data', {
-        data: securityToken,
+    if (!t || !scheme || !timestamp || !signature) {
+      this.logger.error('Invalid signature header scheme', {
+        t,
+        scheme,
+        timestamp,
+        signature,
       });
 
-      const localToken = await this.getLocalSecurityToken();
-      if (!localToken) {
-        return {
-          valid: false,
-          error: new HttpException(
-            'Local Token does not exist yet or has already expired',
-            HttpStatus.BAD_REQUEST,
-          ),
-        };
-      }
-
-      if (securityToken.token !== localToken) {
-        return {
-          valid: false,
-          error: new HttpException('Passed Token is wrong', HttpStatus.FORBIDDEN),
-        };
-      }
-
-      return {
-        valid: true,
-        error: null,
-      };
-    } catch {
-      return {
-        valid: false,
-        error: new HttpException('Token malformed or expired', HttpStatus.BAD_REQUEST),
-      };
+      throw new HttpException('Invalid signature header scheme', HttpStatus.BAD_REQUEST);
     }
+
+    return {
+      timestamp: Number.parseInt(timestamp, 10),
+      signature: signature,
+    };
   }
 
-  public async getLocalSecurityToken() {
-    return this.redis.get(RedisProtection.SecurityToken);
+  public getClientMetadata(req: Request) {
+    const rawMetadata = req.header(this.CLIENT_METADATA_HEADER);
+    if (!rawMetadata) {
+      throw new HttpException('Client metadata not found', HttpStatus.BAD_REQUEST);
+    }
+
+    return JSON.parse(rawMetadata) as IClientMetadata;
+  }
+
+  public async verifyRequest(req: Request) {
+    const secret = this.configService.getOrThrow<string>('protection.signatureSecret');
+    const header = this.configService.getOrThrow<string>('protection.signatureHeader');
+    const timeTolerance = this.configService.getOrThrow<number>('protection.signatureTimeTolerance');
+
+    const rawSignature = req.header(header);
+    if (!rawSignature) {
+      this.logger.error('Signature header is missed');
+      throw new HttpException('Signature is required', HttpStatus.BAD_REQUEST);
+    }
+
+    const { timestamp, signature } = this.parseSignature(rawSignature);
+
+    const body = JSON.stringify(req.body);
+    const query = JSON.stringify(url.parse(req.url || '', true).query);
+
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const computedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(`${timestamp}.${body}.${query}`, 'utf8')
+      .digest('hex');
+
+    if (signature !== computedSignature) {
+      this.logger.error('Bad signature');
+      throw new HttpException('Bad signature', HttpStatus.FORBIDDEN);
+    }
+
+    if (currentTimestamp - timestamp > timeTolerance) {
+      this.logger.error('Expired signature');
+      throw new HttpException('Expired signature', HttpStatus.FORBIDDEN);
+    }
   }
 }
