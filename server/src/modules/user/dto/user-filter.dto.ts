@@ -1,7 +1,7 @@
 /*external modules*/
 import { Types } from 'mongoose';
 import { BadRequestException } from '@nestjs/common';
-import { IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -47,4 +47,20 @@ export class UserFilterDto {
     example: 2_342_342_324,
   })
   readonly telegramId?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty({
+    type: Boolean,
+    example: false,
+  })
+  readonly blocked?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty({
+    type: Boolean,
+    example: true,
+  })
+  readonly hasBotAccess?: boolean;
 }
