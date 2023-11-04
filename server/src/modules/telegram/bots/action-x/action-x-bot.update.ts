@@ -25,6 +25,7 @@ export class ActionXBotUpdate {
 
   @On('message')
   async onMessage(@Ctx() ctx: Context, @Next() next: () => Promise<void>): Promise<void> {
+    // TODO: update last activity
     return next();
   }
 

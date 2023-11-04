@@ -1,6 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -8,9 +7,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from '@common/guards';
 import { UserDocument, UserEntity } from '@schemas/user';
-import { CurrentUser } from '@common/decorators';
+import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserPaginateResultEntity } from './entities/user-paginate-result.entity';
 import { FindUserDto } from './dto';
 import { ParseObjectIdPipe } from '@common/pipes';
@@ -23,8 +21,7 @@ export class UserController {
 
   @Get('/me')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @AuthUser()
   @ApiOperation({ summary: 'Get current user.' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -38,8 +35,7 @@ export class UserController {
 
   @Post('/all')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @AuthUser()
   @ApiOperation({ summary: 'Get all users.' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -53,8 +49,7 @@ export class UserController {
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @AuthUser()
   @ApiOperation({ summary: 'Get user by id.' })
   @ApiResponse({
     status: HttpStatus.OK,

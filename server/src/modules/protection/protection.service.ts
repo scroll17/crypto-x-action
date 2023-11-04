@@ -1,14 +1,11 @@
+import url from 'node:url';
+import crypto from 'node:crypto';
+import Redis from 'ioredis';
+import { Request } from 'express';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
-import { DataGenerateHelper } from '@common/helpers';
-import { JwtService } from '@nestjs/jwt';
-import Redis from 'ioredis';
-import {Request} from "express";
-import {IClientMetadata} from "@common/types";
-import url from "node:url";
-import crypto from "node:crypto";
-
+import { IClientMetadata } from '@common/types';
 
 @Injectable()
 export class ProtectionService {
@@ -19,9 +16,7 @@ export class ProtectionService {
 
   constructor(
     private configService: ConfigService,
-    private jwtService: JwtService,
     private redisService: RedisService,
-    private dataGenerateHelper: DataGenerateHelper,
   ) {
     this.redis = this.redisService.getDefaultConnection();
   }
