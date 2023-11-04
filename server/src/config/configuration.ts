@@ -64,6 +64,11 @@ export const configuration = () => {
     signatureTimeTolerance: ms(process.env.PROTECTION_SIGNATURE_TIME_TOLERANCE!),
   };
 
+  const swagger = {
+    user: process.env.SWAGGER_USER,
+    password: process.env.SWAGGER_PASSWORD,
+  };
+
   const seed = {
     bootstrapCommands: JSON.parse(process.env.BOOTSTRAP_COMMANDS!),
   };
@@ -83,6 +88,7 @@ export const configuration = () => {
     redisCommander,
     mongo,
     protection,
+    swagger,
     seed,
   };
 };
