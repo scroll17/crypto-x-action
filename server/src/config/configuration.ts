@@ -56,6 +56,9 @@ export const configuration = () => {
     userTokenSecret: process.env.PROTECTION_USER_TOKEN_SECRET,
     userTokenExpires: process.env.PROTECTION_USER_TOKEN_EXPIRES,
     userTokenHeader: process.env.PROTECTION_USER_TOKEN_HEADER,
+    protectionSignatureVerificationEnabled: Boolean(
+      Number.parseInt(process.env.PROTECTION_SIGNATURE_VERIFICATION_ENABLED!, 10),
+    ),
     signatureSecret: process.env.PROTECTION_SIGNATURE_SECRET,
     signatureHeader: process.env.PROTECTION_SIGNATURE_HEADER,
     signatureTimeTolerance: ms(process.env.PROTECTION_SIGNATURE_TIME_TOLERANCE!),
