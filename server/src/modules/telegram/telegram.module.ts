@@ -1,3 +1,4 @@
+import { session } from 'telegraf';
 import { Module } from '@nestjs/common';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -6,7 +7,6 @@ import { telegrafMessageLoggingMiddleware } from '@common/telegram/middlewares';
 
 @Module({
   imports: [
-    ActionXBotModule,
     TelegrafModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -17,10 +17,11 @@ import { telegrafMessageLoggingMiddleware } from '@common/telegram/middlewares';
         return {
           token: configService.getOrThrow('telegram.token'),
           include: botEnabled ? [ActionXBotModule] : [],
-          middlewares: [telegrafMessageLoggingMiddleware],
+          middlewares: [telegrafMessageLoggingMiddleware, session()],
         };
       },
     }),
+    ActionXBotModule,
   ],
   exports: [ActionXBotModule],
 })

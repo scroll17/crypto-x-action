@@ -1,3 +1,4 @@
+import Redis from 'ioredis';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NgrokService } from '../../../ngrok/ngrok.service';
@@ -5,7 +6,6 @@ import { ProtectionService } from '../../../protection/protection.service';
 import { MarkdownHelper } from '@common/telegram/helpers';
 import { TelegrafException } from 'nestjs-telegraf';
 import { RedisService } from '../../../redis/redis.service';
-import Redis from 'ioredis';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModel } from '@schemas/user';
 

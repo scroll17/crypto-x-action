@@ -1,10 +1,11 @@
 import { Command, Ctx, Help, InjectBot, Next, On, Start, Update } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
+import { SceneContext } from 'telegraf/typings/scenes';
 import { Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { ActionXBotService } from './action-x-bot.service';
 import { TelegrafExceptionFilter } from '@common/telegram/filters';
-import { TelegrafAuthUser, TelegrafCurrentUser } from '@common/telegram/decorators';
-import { ITelegramUser } from '@common/types';
+import { TelegrafAuthUser } from '@common/telegram/decorators';
+import { TelegrafScene } from '@common/telegram/enums';
 
 @Update()
 @UseInterceptors()
@@ -53,11 +54,7 @@ export class ActionXBotUpdate {
 
   @Command('set_user_secret')
   @TelegrafAuthUser()
-  async onSetUserSecretCommand(
-    @TelegrafCurrentUser() tgUser: ITelegramUser,
-    @Ctx() ctx: Context,
-  ): Promise<void> {
-    // const message = await this.actionXBotService.getSecurityToken(ctx.message!.from.id);
-    // await ctx.replyWithMarkdown(message);
+  async onSetUserSecretCommand(@Ctx() ctx: SceneContext): Promise<void> {
+    await ctx.scene.enter(TelegrafScene.SetUserSecret);
   }
 }
