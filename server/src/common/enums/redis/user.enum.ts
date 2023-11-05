@@ -1,4 +1,4 @@
 export enum RedisUser {
-  VerifyCode = 'VerifyCode',
-  ResetCode = 'ResetCode',
+  VerifyCode = 'verify-code',
+  ResetCode = 'reset-code',
 }

@@ -1,3 +1,3 @@
 export enum RedisProtection {
-  SecurityToken = 'SecurityToken',
+  UserSecret = 'user-secret',
 }

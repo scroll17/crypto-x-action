@@ -1,4 +1,5 @@
 /*external modules*/
+import Redis from 'ioredis';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
@@ -8,14 +9,19 @@ import { IProtectionTokenPayload } from '@common/types';
 /*@entities*/
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserModel } from '@schemas/user';
+import { RedisService } from '../../redis/redis.service';
+import { RedisProtection } from '@common/enums';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(this.constructor.name);
 
+  private redis: Redis;
+
   constructor(
-    private configService: ConfigService,
-    @InjectModel(User.name) private userModel: UserModel,
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
+    @InjectModel(User.name) private readonly userModel: UserModel,
   ) {
     const header = configService.getOrThrow<string>('protection.userTokenHeader');
     const secret = configService.getOrThrow<string>('protection.userTokenSecret');
@@ -25,6 +31,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey: secret,
     });
+
+    this.redis = this.redisService.getDefaultConnection();
   }
 
   public async validate(payload: IProtectionTokenPayload): Promise<UserDocument> {
@@ -41,8 +49,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
     });
 
-    // TODO: check for secret in Redis
+    const secret = await this.redis.get(`${RedisProtection.UserSecret}:${payload.telegramId}`);
+    if (!secret) {
+      throw new HttpException('Secret not found', HttpStatus.FORBIDDEN);
+    }
 
+    if (secret !== payload.secret) {
+      throw new HttpException('Secret is invalid', HttpStatus.FORBIDDEN);
+    }
 
     return user;
   }
