@@ -13,13 +13,27 @@ import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserPaginateResultEntity } from '../user/entities/user-paginate-result.entity';
 import { ParseObjectIdPipe } from '@common/pipes';
 import { CommentEntity } from '@schemas/comment';
-import { FindCommentDto } from './dto';
+import { CreateCommentDto, FindCommentDto } from './dto';
 import { UserDocument } from '@schemas/user';
 
 @Controller('comment')
 @ApiTags('Comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
+
+  @Post('/create')
+  @HttpCode(HttpStatus.CREATED)
+  @AuthUser()
+  @ApiOperation({ summary: 'Create new comment.' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'New Comment document.',
+    type: CommentEntity,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async create(@CurrentUser() user: UserDocument, @Body() dto: CreateCommentDto) {
+    return this.commentService.create(user, dto);
+  }
 
   @Post('/all')
   @HttpCode(HttpStatus.OK)

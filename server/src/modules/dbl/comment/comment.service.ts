@@ -1,9 +1,10 @@
+import * as _ from 'lodash';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument, CommentEntity, CommentModel } from '@schemas/comment';
 import { PaginateResultEntity } from '@common/entities';
-import { FindCommentDto } from './dto';
+import { CreateCommentDto, FindCommentDto } from './dto';
 import { Types } from 'mongoose';
 import { UserDocument } from '@schemas/user';
 
@@ -13,8 +14,29 @@ export class CommentService {
 
   constructor(
     private readonly configService: ConfigService,
-    @InjectModel(Comment.name) private commentModel: CommentModel,
+    @InjectModel(Comment.name) private readonly commentModel: CommentModel,
   ) {}
+
+  public async create(user: UserDocument, dto: CreateCommentDto) {
+    this.logger.debug('Create new Comment', {
+      admin: _.pick(user, ['_id', 'email']),
+      comment: dto,
+    });
+
+    const newComment = await this.commentModel.create({
+      text: dto.text,
+      createdBy: user._id,
+    });
+
+    this.logger.debug('Created new Comment record', {
+      ...newComment.toJSON(),
+    });
+
+    const [commentWithRefs] = await this.commentModel.findByWithRelationships({
+      _id: newComment._id,
+    });
+    return commentWithRefs;
+  }
 
   public async getAll(dto: FindCommentDto): Promise<PaginateResultEntity<CommentEntity>> {
     this.logger.debug('Get all comments', { ...dto });
