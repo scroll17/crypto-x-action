@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import { Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes } from 'mongoose';
+import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes, Types } from 'mongoose';
 import { PaginateResultEntity } from '@common/entities';
 import { USER_COLLECTION_NAME, UserDocument } from '../user';
-import { FindCommentDto } from '../../../modules/dbl/comment/dto';
+import { EditCommentDto, FindCommentDto } from '../../../modules/dbl/comment/dto';
 import { CommentEntity } from '@schemas/comment/comment.entity';
 
 export type CommentDocument = HydratedDocument<Comment> & TStaticMethods;
@@ -38,6 +38,11 @@ type TStaticMethods = {
     options: FilterQuery<CommentDocument>,
   ) => Promise<CommentDocument[]>;
   paginate: (this: CommentModel, findOptions: FindCommentDto) => Promise<PaginateResultEntity<CommentEntity>>;
+  updateComment: (
+    this: CommentModel,
+    commentId: Types.ObjectId,
+    data: EditCommentDto,
+  ) => Promise<CommentDocument>;
 };
 
 // STATIC METHODS IMPLEMENTATION
@@ -95,3 +100,24 @@ CommentSchema.statics.paginate = async function (findOptions): Promise<PaginateR
     },
   };
 } as TStaticMethods['paginate'];
+
+CommentSchema.statics.updateComment = async function (commentId, data): Promise<CommentDocument> {
+  const updateData: Partial<Comment> = {};
+  if ('text' in data && data.text) {
+    updateData.text = data.text;
+  }
+
+  const comment = await this.findOneAndUpdate(
+    {
+      _id: commentId,
+    },
+    {
+      $set: updateData,
+    },
+    {
+      returnOriginal: false,
+    },
+  ).exec();
+
+  return comment!;
+} as TStaticMethods['updateComment'];
