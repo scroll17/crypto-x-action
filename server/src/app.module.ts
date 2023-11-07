@@ -28,6 +28,7 @@ import { DebankModule } from './modules/integrations/debank/debank.module';
 import { UserModule } from './modules/dbl/user/user.module';
 import { ProtectionMiddleware } from '@common/middlewares';
 import { CommentModule } from './modules/dbl/comment/comment.module';
+import { BlockchainAccountModule } from './modules/dbl/blockchain-account/blockchain-account.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { CommentModule } from './modules/dbl/comment/comment.module';
     SeedsModule,
     UserModule,
     CommentModule,
+    BlockchainAccountModule,
     // Other
     TelegramModule,
     AdminModule,
