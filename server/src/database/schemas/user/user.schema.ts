@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema } from 'mongoose';
-import { FindUserDto } from '../../../modules/user/dto';
+import { FindUserDto } from '../../../modules/dbl/user/dto';
 import { PaginateResultEntity } from '@common/entities';
 import { UserEntity } from '@schemas/user/user.entity';
 

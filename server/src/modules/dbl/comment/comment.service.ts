@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentEntity, CommentModel } from '@schemas/comment';
+import { Comment, CommentDocument, CommentEntity, CommentModel } from '@schemas/comment';
 import { PaginateResultEntity } from '@common/entities';
 import { FindCommentDto } from './dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class CommentService {
@@ -24,5 +25,18 @@ export class CommentService {
     });
 
     return comments;
+  }
+
+  public async getById(id: Types.ObjectId): Promise<CommentDocument> {
+    this.logger.debug('Get comment by id', {
+      id,
+    });
+
+    const comment = await this.commentModel.findById(id).exec();
+    if (!comment) {
+      throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+    }
+
+    return comment;
   }
 }

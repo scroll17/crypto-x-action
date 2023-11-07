@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -58,6 +59,7 @@ export class UserController {
   })
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
   async getById(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.userService.getById(id);
   }
