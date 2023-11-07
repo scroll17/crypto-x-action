@@ -20,6 +20,7 @@ export class CommentEntity implements Comment {
 
   @ApiProperty({
     type: UserEntity,
+    description: 'The ID of the User who created new one',
   })
   // @ts-ignore
   createdBy: UserEntity;

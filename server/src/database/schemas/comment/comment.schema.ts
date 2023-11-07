@@ -59,6 +59,12 @@ CommentSchema.statics.findByWithRelationships = async function (where) {
         as: 'createdBy',
       },
     },
+    {
+      $unwind: {
+        path: '$createdBy',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
   ]).exec();
 } as TStaticMethods['findByWithRelationships'];
 

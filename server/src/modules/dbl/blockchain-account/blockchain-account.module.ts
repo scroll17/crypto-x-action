@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { BlockchainAccountService } from './blockchain-account.service';
 import { BlockchainAccountController } from './blockchain-account.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '@schemas/user';
+import { BlockChainAccount, BlockchainAccountSchema } from '@schemas/index';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
-        name: User.name,
-        schema: UserSchema,
+        name: BlockChainAccount.name,
+        schema: BlockchainAccountSchema,
       },
     ]),
   ],
