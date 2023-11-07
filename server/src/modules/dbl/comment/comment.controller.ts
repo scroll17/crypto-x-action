@@ -1,5 +1,16 @@
 import { Types } from 'mongoose';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -13,7 +24,7 @@ import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserPaginateResultEntity } from '../user/entities/user-paginate-result.entity';
 import { ParseObjectIdPipe } from '@common/pipes';
 import { CommentEntity } from '@schemas/comment';
-import { CreateCommentDto, FindCommentDto } from './dto';
+import { CreateCommentDto, EditCommentDto, FindCommentDto } from './dto';
 import { UserDocument } from '@schemas/user';
 
 @Controller('comment')
@@ -33,6 +44,22 @@ export class CommentController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async create(@CurrentUser() user: UserDocument, @Body() dto: CreateCommentDto) {
     return this.commentService.create(user, dto);
+  }
+
+  @Patch('/edit')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Update comment by id.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Updated comment record.',
+    type: CommentEntity,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiNotFoundResponse({ description: 'Comment not found' })
+  @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  async edit(@CurrentUser() user: UserDocument, @Query('id', ParseObjectIdPipe) id: Types.ObjectId, @Body() dto: EditCommentDto) {
+    return this.commentService.edit(user, id, dto);
   }
 
   @Post('/all')

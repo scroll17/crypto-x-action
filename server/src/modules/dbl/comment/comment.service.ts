@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument, CommentEntity, CommentModel } from '@schemas/comment';
 import { PaginateResultEntity } from '@common/entities';
-import { CreateCommentDto, FindCommentDto } from './dto';
+import { CreateCommentDto, EditCommentDto, FindCommentDto } from './dto';
 import { Types } from 'mongoose';
 import { UserDocument } from '@schemas/user';
 
@@ -36,6 +36,34 @@ export class CommentService {
       _id: newComment._id,
     });
     return commentWithRefs;
+  }
+
+  public async edit(user: UserDocument, id: Types.ObjectId, dto: EditCommentDto): Promise<CommentDocument> {
+    this.logger.debug('Update comment by id', {
+      id,
+      data: dto,
+    });
+
+    if (Object.keys(dto).filter(Boolean).length === 0) {
+      throw new HttpException('No data for updating', HttpStatus.BAD_REQUEST);
+    }
+
+    const comment = await this.commentModel.findById(id).exec();
+    if (!comment) {
+      throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!comment.createdBy._id.equals(user._id)) {
+      throw new HttpException('Cant update foreign comment', HttpStatus.FORBIDDEN);
+    }
+
+    const updatedComment = await this.commentModel.updateComment(comment._id, dto);
+
+    this.logger.debug('Comment updated', {
+      id: comment._id,
+    });
+
+    return updatedComment;
   }
 
   public async getAll(dto: FindCommentDto): Promise<PaginateResultEntity<CommentEntity>> {
