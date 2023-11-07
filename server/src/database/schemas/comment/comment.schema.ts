@@ -2,10 +2,10 @@ import _ from 'lodash';
 import { Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes } from 'mongoose';
-import { FindUserDto } from '../../../modules/user/dto';
 import { PaginateResultEntity } from '@common/entities';
-import { UserEntity } from '@schemas/user/user.entity';
 import { USER_COLLECTION_NAME, UserDocument } from '../user';
+import { FindCommentDto } from '../../../modules/dbl/comment/dto';
+import { CommentEntity } from '@schemas/comment/comment.entity';
 
 export type CommentDocument = HydratedDocument<Comment> & TStaticMethods;
 export type CommentModel = Model<CommentDocument> & TStaticMethods;
@@ -37,6 +37,61 @@ type TStaticMethods = {
     this: CommentModel,
     options: FilterQuery<CommentDocument>,
   ) => Promise<CommentDocument[]>;
-  paginate: (this: CommentModel, findOptions: FindUserDto) => Promise<PaginateResultEntity<UserEntity>>;
+  paginate: (this: CommentModel, findOptions: FindCommentDto) => Promise<PaginateResultEntity<CommentEntity>>;
 };
 
+// STATIC METHODS IMPLEMENTATION
+CommentSchema.statics.findByWithRelationships = async function (where) {
+  return await this.aggregate([
+    {
+      $match: where,
+    },
+    {
+      $lookup: {
+        from: USER_COLLECTION_NAME,
+        foreignField: '_id',
+        localField: 'createdBy',
+        as: 'createdBy',
+      },
+    },
+  ]).exec();
+} as TStaticMethods['findByWithRelationships'];
+
+CommentSchema.statics.paginate = async function (findOptions): Promise<PaginateResultEntity<CommentEntity>> {
+  const { filter: rawFilter, paginate, sort } = findOptions;
+  const { count, page } = paginate;
+
+  const filter = Object.fromEntries(
+    Object.entries(_.omit({ ...rawFilter }, ['id'])).filter(([, value]) => !_.isNil(value)),
+  );
+
+  const skip = (page - 1) * count;
+  const where: FilterQuery<CommentDocument> = rawFilter?.id
+    ? { _id: rawFilter.id, ...filter }
+    : { ...filter };
+
+  if ('text' in where && where.text) {
+    where.text = { $regex: where.text, $options: 'i' };
+  }
+  if ('createdBy' in where && where.createdBy) {
+    // where.createdBy = where.createdBy
+  }
+
+  const total = await this.count(where);
+  const data = (await this.aggregate()
+    .match(where)
+    .skip(skip)
+    .limit(count)
+    .sort(sort ? { [sort.name]: sort.type } : { _id: 'desc' })
+    .exec()) as CommentEntity[];
+
+  return {
+    data: data,
+    meta: {
+      total,
+      page,
+      count,
+      lastPage: Math.ceil(total / count),
+    },
+  };
+} as TStaticMethods['paginate'];
