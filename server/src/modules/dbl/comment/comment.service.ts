@@ -32,10 +32,7 @@ export class CommentService {
       ...newComment.toJSON(),
     });
 
-    const [commentWithRefs] = await this.commentModel.findByWithRelationships({
-      _id: newComment._id,
-    });
-    return commentWithRefs;
+    return newComment;
   }
 
   public async edit(user: UserDocument, id: Types.ObjectId, dto: EditCommentDto): Promise<CommentDocument> {
