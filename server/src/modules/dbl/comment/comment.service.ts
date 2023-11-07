@@ -5,6 +5,7 @@ import { Comment, CommentDocument, CommentEntity, CommentModel } from '@schemas/
 import { PaginateResultEntity } from '@common/entities';
 import { FindCommentDto } from './dto';
 import { Types } from 'mongoose';
+import { UserDocument } from '@schemas/user';
 
 @Injectable()
 export class CommentService {
@@ -38,5 +39,27 @@ export class CommentService {
     }
 
     return comment;
+  }
+
+  public async remove(user: UserDocument, id: Types.ObjectId): Promise<void> {
+    this.logger.debug('Remove comment by id', {
+      id,
+    });
+
+    const comment = await this.commentModel.findById(id).exec();
+    if (!comment) {
+      throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!comment.createdBy._id.equals(user._id)) {
+      throw new HttpException('Cant delete foreign comment', HttpStatus.FORBIDDEN);
+    }
+
+    await this.commentModel.deleteOne({
+      _id: comment._id,
+    });
+    this.logger.debug('Comment deleted', {
+      id: comment._id,
+    });
   }
 }

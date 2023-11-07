@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -9,11 +9,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CommentService } from './comment.service';
-import { AuthUser } from '@common/decorators';
+import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserPaginateResultEntity } from '../user/entities/user-paginate-result.entity';
 import { ParseObjectIdPipe } from '@common/pipes';
 import { CommentEntity } from '@schemas/comment';
 import { FindCommentDto } from './dto';
+import { UserDocument } from '@schemas/user';
 
 @Controller('comment')
 @ApiTags('Comment')
@@ -48,5 +49,22 @@ export class CommentController {
   @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
   async getById(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.commentService.getById(id);
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Delete comment by id.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The result of deletion.',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiNotFoundResponse({ description: 'Comment not found' })
+  @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  async remove(@CurrentUser() user: UserDocument, @Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    await this.commentService.remove(user, id);
+    return true;
   }
 }
