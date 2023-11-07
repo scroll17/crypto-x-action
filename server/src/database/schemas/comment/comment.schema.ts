@@ -40,4 +40,3 @@ type TStaticMethods = {
   paginate: (this: CommentModel, findOptions: FindUserDto) => Promise<PaginateResultEntity<UserEntity>>;
 };
 
-

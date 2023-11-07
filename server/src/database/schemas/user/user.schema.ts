@@ -9,9 +9,9 @@ import { UserEntity } from '@schemas/user/user.entity';
 export type UserDocument = HydratedDocument<User> & TStaticMethods;
 export type UserModel = Model<UserDocument> & TStaticMethods;
 
-export const COLLECTION_NAME = 'users';
+export const USER_COLLECTION_NAME = 'users';
 
-@Schema({ timestamps: true, collection: COLLECTION_NAME })
+@Schema({ timestamps: true, collection: USER_COLLECTION_NAME })
 export class User {
   @Prop({ type: String, required: true })
   name: string;

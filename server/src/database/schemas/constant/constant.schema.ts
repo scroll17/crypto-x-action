@@ -9,9 +9,9 @@ import { Type } from '@nestjs/common';
 export type ConstantDocument = HydratedDocument<Constant> & TStaticMethods;
 export type ConstantModel = Model<ConstantDocument> & TStaticMethods;
 
-export const COLLECTION_NAME = 'constants';
+export const CONSTANT_COLLECTION_NAME = 'constants';
 
-@Schema({ timestamps: true, collection: COLLECTION_NAME })
+@Schema({ timestamps: true, collection: CONSTANT_COLLECTION_NAME })
 export class Constant {
   @Prop({
     type: String,
