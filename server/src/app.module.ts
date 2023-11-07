@@ -27,6 +27,7 @@ import { ProtectionModule } from './modules/protection/protection.module';
 import { DebankModule } from './modules/integrations/debank/debank.module';
 import { UserModule } from './modules/dbl/user/user.module';
 import { ProtectionMiddleware } from '@common/middlewares';
+import { CommentModule } from './modules/dbl/comment/comment.module';
 
 @Module({
   imports: [
@@ -62,14 +63,18 @@ import { ProtectionMiddleware } from '@common/middlewares';
       verboseMemoryLeak: true,
       ignoreErrors: false,
     }),
+    // Global
+    RedisModule,
+    NgrokModule,
+    JobModule,
+    ProtectionModule,
+    // DBL
     SeedsModule,
-    RedisModule, // global
-    NgrokModule, // global
-    JobModule, // global
-    ProtectionModule, // global
+    UserModule,
+    CommentModule,
+    // Other
     TelegramModule,
     AdminModule,
-    UserModule,
     DebankModule,
   ],
   controllers: [],
