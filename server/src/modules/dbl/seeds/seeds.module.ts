@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CommandModule } from 'nestjs-command';
-import { UserSeed } from '../../../database/seeds';
+import { BlockchainNetworkSeed, UserSeed } from '../../../database/seeds';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '@schemas/user';
 import { Constant, ConstantSchema } from '@schemas/constant';
+import { BlockchainNetwork, BlockchainNetworkSchema } from '@schemas/blockchain-network';
 
-const seeds = [UserSeed];
+const seeds = [UserSeed, BlockchainNetworkSeed];
 // const commands: unknown[] = [];
 
 @Module({
@@ -19,6 +20,10 @@ const seeds = [UserSeed];
       {
         name: Constant.name,
         schema: ConstantSchema,
+      },
+      {
+        name: BlockchainNetwork.name,
+        schema: BlockchainNetworkSchema,
       },
     ]),
   ],
