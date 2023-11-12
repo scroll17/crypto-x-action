@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FindCommentDto } from '../../comment/dto';
 import { PaginateResultEntity } from '@common/entities';
@@ -7,6 +8,7 @@ import {
   BlockchainNetwork,
   BlockchainNetworkModel,
   BlockchainNetworkEntity,
+  BlockchainNetworkDocument,
 } from '@schemas/blockchain-network';
 
 @Injectable()
@@ -28,5 +30,20 @@ export class BlockchainNetworkService {
     });
 
     return networks;
+  }
+
+  public async getById(id: Types.ObjectId): Promise<BlockchainNetworkDocument> {
+    this.logger.debug('Get blockchain network by id', {
+      id,
+    });
+
+    // TODO: load network with details such as fee and other
+
+    const network = await this.blockchainNetworkModel.findById(id).exec();
+    if (!network) {
+      throw new HttpException('Blockchain network not found', HttpStatus.NOT_FOUND);
+    }
+
+    return network;
   }
 }

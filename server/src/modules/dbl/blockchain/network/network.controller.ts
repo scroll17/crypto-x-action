@@ -1,9 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BlockchainNetworkService } from './network.service';
 import { AuthUser } from '@common/decorators';
 import { BlockchainNetworkPaginateResultEntity } from './entities';
 import { FindBlockchainNetworkDto } from './dto';
+import { ParseObjectIdPipe } from '@common/pipes';
+import { BlockchainNetworkEntity } from '@schemas/blockchain-network';
 
 @Controller('blockchain/network')
 @ApiTags('Blockchain', 'BlockchainNetwork')
@@ -22,5 +32,21 @@ export class BlockchainNetworkController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAll(@Body() dto: FindBlockchainNetworkDto) {
     return this.blockchainNetworkService.getAll(dto);
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Get blockchain network by id.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The blockchain network by id.',
+    type: BlockchainNetworkEntity,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiNotFoundResponse({ description: 'Blockchain network not found' })
+  @ApiParam({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  async getById(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    return this.blockchainNetworkService.getById(id);
   }
 }

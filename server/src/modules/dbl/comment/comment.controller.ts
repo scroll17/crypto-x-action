@@ -15,6 +15,7 @@ import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -58,7 +59,11 @@ export class CommentController {
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiNotFoundResponse({ description: 'Comment not found' })
   @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
-  async edit(@CurrentUser() user: UserDocument, @Query('id', ParseObjectIdPipe) id: Types.ObjectId, @Body() dto: EditCommentDto) {
+  async edit(
+    @CurrentUser() user: UserDocument,
+    @Query('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() dto: EditCommentDto,
+  ) {
     return this.commentService.edit(user, id, dto);
   }
 
@@ -87,7 +92,7 @@ export class CommentController {
   })
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiNotFoundResponse({ description: 'Comment not found' })
-  @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  @ApiParam({ name: 'id', type: String, description: 'The ObjectId in the String view' })
   async getById(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.commentService.getById(id);
   }
@@ -103,7 +108,7 @@ export class CommentController {
   })
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiNotFoundResponse({ description: 'Comment not found' })
-  @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  @ApiParam({ name: 'id', type: String, description: 'The ObjectId in the String view' })
   async remove(@CurrentUser() user: UserDocument, @Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     await this.commentService.remove(user, id);
     return true;
