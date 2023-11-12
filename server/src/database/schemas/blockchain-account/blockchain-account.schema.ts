@@ -5,13 +5,13 @@ import { USER_COLLECTION_NAME, UserDocument } from '../user';
 import { BlockchainNetworks } from '@common/blockchain/enums';
 import { COMMENT_COLLECTION_NAME, CommentDocument } from '@schemas/comment';
 
-export type BlockChainAccountDocument = HydratedDocument<BlockChainAccount> & TStaticMethods;
-export type BlockChainAccountModel = Model<BlockChainAccountDocument> & TStaticMethods;
+export type BlockchainAccountDocument = HydratedDocument<BlockchainAccount> & TStaticMethods;
+export type BlockchainAccountModel = Model<BlockchainAccountDocument> & TStaticMethods;
 
 export const BLOCKCHAIN_ACCOUNT_COLLECTION_NAME = 'blockchainAccounts';
 
 @Schema({ timestamps: true, collection: BLOCKCHAIN_ACCOUNT_COLLECTION_NAME })
-export class BlockChainAccount {
+export class BlockchainAccount {
   @Prop({ type: String, required: true, unique: true })
   name: string;
 
@@ -33,8 +33,8 @@ export class BlockChainAccount {
 }
 
 export const BlockchainAccountSchema = SchemaFactory.createForClass(
-  BlockChainAccount,
-) as unknown as MongooseSchema<Type<BlockChainAccount>, BlockChainAccountModel>;
+  BlockchainAccount,
+) as unknown as MongooseSchema<Type<BlockchainAccount>, BlockchainAccountModel>;
 
 // INDEXES
 BlockchainAccountSchema.index({
@@ -44,9 +44,9 @@ BlockchainAccountSchema.index({
 // CUSTOM TYPES
 type TStaticMethods = {
   findByWithRelationships: (
-    this: BlockChainAccountModel,
-    options: FilterQuery<BlockChainAccountDocument>,
-  ) => Promise<BlockChainAccountDocument[]>;
+    this: BlockchainAccountModel,
+    options: FilterQuery<BlockchainAccountDocument>,
+  ) => Promise<BlockchainAccountDocument[]>;
 };
 
 // STATIC METHODS IMPLEMENTATION

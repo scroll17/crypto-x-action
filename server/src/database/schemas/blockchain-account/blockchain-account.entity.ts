@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { BlockChainAccount } from './blockchain-account.schema';
+import { BlockchainAccount } from './blockchain-account.schema';
 import { UserEntity } from '@schemas/user';
 import { CommentEntity } from '@schemas/comment';
 import { BlockchainNetworks } from '@common/blockchain/enums';
 
-export class BlockchainAccountEntity implements BlockChainAccount {
+export class BlockchainAccountEntity implements BlockchainAccount {
   @ApiProperty({
     type: String,
     example: '5349b4ddd2781d08c09890f4',
