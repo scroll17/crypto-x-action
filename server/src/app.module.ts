@@ -29,6 +29,7 @@ import { UserModule } from './modules/dbl/user/user.module';
 import { ProtectionMiddleware } from '@common/middlewares';
 import { CommentModule } from './modules/dbl/comment/comment.module';
 import { BlockchainAccountModule } from './modules/dbl/blockchain/account/account.module';
+import { BlockchainNetworkModule } from './modules/dbl/blockchain/network/network.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { BlockchainAccountModule } from './modules/dbl/blockchain/account/accoun
     UserModule,
     CommentModule,
     BlockchainAccountModule,
+    BlockchainNetworkModule,
     // Other
     TelegramModule,
     AdminModule,

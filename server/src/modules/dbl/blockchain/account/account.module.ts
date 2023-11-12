@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { BlockchainAccountService } from './account.service';
-import { AccountController } from './account.controller';
+import { BlockchainAccountController } from './account.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BlockchainAccount, BlockchainAccountSchema } from '@schemas/index';
 
@@ -14,6 +14,6 @@ import { BlockchainAccount, BlockchainAccountSchema } from '@schemas/index';
     ]),
   ],
   providers: [BlockchainAccountService],
-  controllers: [AccountController],
+  controllers: [BlockchainAccountController],
 })
 export class BlockchainAccountModule {}
