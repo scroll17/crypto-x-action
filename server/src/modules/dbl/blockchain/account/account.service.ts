@@ -1,10 +1,12 @@
 import * as _ from 'lodash';
+import { Types } from 'mongoose';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@schemas/user';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   BlockchainAccount,
+  BlockchainAccountDocument,
   BlockchainAccountEntity,
   BlockchainAccountModel,
 } from '@schemas/blockcain/account';
@@ -57,5 +59,18 @@ export class BlockchainAccountService {
     });
 
     return accounts;
+  }
+
+  public async getById(id: Types.ObjectId): Promise<BlockchainAccountDocument> {
+    this.logger.debug('Get blockchain account by id', {
+      id,
+    });
+
+    const account = await this.blockchainAccountModel.findById(id).exec();
+    if (!account) {
+      throw new HttpException('Blockchain account not found', HttpStatus.NOT_FOUND);
+    }
+
+    return account;
   }
 }

@@ -1,5 +1,14 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Types } from 'mongoose';
+import { ParseObjectIdPipe } from '@common/pipes';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BlockchainAccountService } from './account.service';
 import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserDocument } from '@schemas/user';
@@ -38,5 +47,21 @@ export class BlockchainAccountController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAll(@Body() dto: FindBlockchainAccountDto) {
     return this.blockchainAccountService.getAll(dto);
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Get blockchain account by id.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The blockchain account by id.',
+    type: BlockchainAccountEntity,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiNotFoundResponse({ description: 'Blockchain account not found' })
+  @ApiParam({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  async getById(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    return this.blockchainAccountService.getById(id);
   }
 }
