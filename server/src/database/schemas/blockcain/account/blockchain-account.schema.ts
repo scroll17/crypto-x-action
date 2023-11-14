@@ -2,8 +2,8 @@ import { Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes } from 'mongoose';
 import { USER_COLLECTION_NAME, UserDocument } from '../../user';
-import { BlockchainNetworks } from '@common/blockchain/enums';
 import { COMMENT_COLLECTION_NAME, CommentDocument } from '@schemas/comment';
+import { BLOCKCHAIN_NETWORK_COLLECTION_NAME, BlockchainNetworkDocument } from '@schemas/blockcain/network';
 
 export type BlockchainAccountDocument = HydratedDocument<BlockchainAccount> & TStaticMethods;
 export type BlockchainAccountModel = Model<BlockchainAccountDocument> & TStaticMethods;
@@ -15,15 +15,11 @@ export class BlockchainAccount {
   @Prop({ type: String, required: true, unique: true })
   name: string;
 
-  @Prop({
-    type: String,
-    required: true,
-    enum: Object.values(BlockchainNetworks),
-  })
-  network: BlockchainNetworks;
-
   @Prop({ type: [String], required: true, default: [] })
   labels: string[];
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: BLOCKCHAIN_NETWORK_COLLECTION_NAME, required: true })
+  network: BlockchainNetworkDocument;
 
   @Prop({ type: [SchemaTypes.ObjectId], ref: COMMENT_COLLECTION_NAME, required: true, default: [] })
   comments: CommentDocument[];

@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { BlockchainAccount } from './blockchain-account.schema';
 import { UserEntity } from '@schemas/user';
 import { CommentEntity } from '@schemas/comment';
-import { BlockchainNetworks } from '@common/blockchain/enums';
+import { BlockchainNetworkEntity } from '@schemas/blockcain/network';
 
 export class BlockchainAccountEntity implements BlockchainAccount {
   @ApiProperty({
@@ -21,18 +21,18 @@ export class BlockchainAccountEntity implements BlockchainAccount {
   name: string;
 
   @ApiProperty({
-    enum: Object.values(BlockchainNetworks),
-    example: BlockchainNetworks.Ethereum,
-    description: 'The Blockchain network where this Account exists',
-  })
-  network: BlockchainNetworks;
-
-  @ApiProperty({
     type: [String],
     example: ['grey', 'hot'],
     description: 'The array of labels which can be used as groups for Accounts',
   })
   labels: string[];
+
+  @ApiProperty({
+    type: BlockchainNetworkEntity,
+    description: 'The Blockchain network record',
+  })
+  // @ts-ignore
+  network: BlockchainNetworkEntity;
 
   @ApiProperty({
     type: [CommentEntity],
