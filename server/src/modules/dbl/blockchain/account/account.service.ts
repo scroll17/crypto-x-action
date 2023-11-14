@@ -3,9 +3,14 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '@schemas/user';
 import { InjectModel } from '@nestjs/mongoose';
-import { BlockchainAccount, BlockchainAccountModel } from '@schemas/blockcain/account';
+import {
+  BlockchainAccount,
+  BlockchainAccountEntity,
+  BlockchainAccountModel,
+} from '@schemas/blockcain/account';
 import { BlockchainNetwork, BlockchainNetworkModel } from '@schemas/blockcain/network';
-import { CreateBlockchainAccountDto } from './dto';
+import { CreateBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
+import { PaginateResultEntity } from '@common/entities';
 
 @Injectable()
 export class BlockchainAccountService {
@@ -40,5 +45,17 @@ export class BlockchainAccountService {
     });
 
     return newAccount;
+  }
+
+  public async getAll(dto: FindBlockchainAccountDto): Promise<PaginateResultEntity<BlockchainAccountEntity>> {
+    this.logger.debug('Get all blockchain accounts', { ...dto });
+
+    const accounts = await this.blockchainAccountModel.paginate(dto);
+
+    this.logger.debug('Blockchain accounts selection result:', {
+      meta: accounts.meta,
+    });
+
+    return accounts;
   }
 }
