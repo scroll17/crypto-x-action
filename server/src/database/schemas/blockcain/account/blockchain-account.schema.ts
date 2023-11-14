@@ -1,7 +1,7 @@
 import { Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes } from 'mongoose';
-import { USER_COLLECTION_NAME, UserDocument } from '../user';
+import { USER_COLLECTION_NAME, UserDocument } from '../../user';
 import { BlockchainNetworks } from '@common/blockchain/enums';
 import { COMMENT_COLLECTION_NAME, CommentDocument } from '@schemas/comment';
 

@@ -4,7 +4,7 @@ import { BlockchainNetworkSeed, UserSeed } from '../../../database/seeds';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '@schemas/user';
 import { Constant, ConstantSchema } from '@schemas/constant';
-import { BlockchainNetwork, BlockchainNetworkSchema } from '@schemas/blockchain-network';
+import { BlockchainNetwork, BlockchainNetworkSchema } from 'src/database/schemas/blockcain/network';
 
 const seeds = [UserSeed, BlockchainNetworkSeed];
 // const commands: unknown[] = [];

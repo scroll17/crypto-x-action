@@ -9,7 +9,7 @@ import {
   BlockchainNetworkModel,
   BlockchainNetworkEntity,
   BlockchainNetworkDocument,
-} from '@schemas/blockchain-network';
+} from 'src/database/schemas/blockcain/network';
 
 @Injectable()
 export class BlockchainNetworkService {
@@ -38,6 +38,7 @@ export class BlockchainNetworkService {
     });
 
     // TODO: load network with details such as fee and other
+    // TODO: load accounts from the network
 
     const network = await this.blockchainNetworkModel.findById(id).exec();
     if (!network) {

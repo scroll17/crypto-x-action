@@ -13,7 +13,7 @@ import { AuthUser } from '@common/decorators';
 import { BlockchainNetworkPaginateResultEntity } from './entities';
 import { FindBlockchainNetworkDto } from './dto';
 import { ParseObjectIdPipe } from '@common/pipes';
-import { BlockchainNetworkEntity } from '@schemas/blockchain-network';
+import { BlockchainNetworkEntity } from 'src/database/schemas/blockcain/network';
 
 @Controller('blockchain/network')
 @ApiTags('Blockchain', 'BlockchainNetwork')

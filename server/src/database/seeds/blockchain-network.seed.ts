@@ -2,7 +2,7 @@ import { Command } from 'nestjs-command';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { BlockchainNetwork, BlockchainNetworkModel } from '@schemas/blockchain-network';
+import { BlockchainNetwork, BlockchainNetworkModel } from 'src/database/schemas/blockcain/network';
 import { BlockchainNetworks } from '@common/blockchain/enums';
 
 @Injectable()

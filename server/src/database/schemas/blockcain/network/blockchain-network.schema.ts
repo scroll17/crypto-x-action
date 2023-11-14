@@ -4,7 +4,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema } from 'mongoose';
 import { BlockchainNetworks } from '@common/blockchain/enums';
 import { PaginateResultEntity } from '@common/entities';
-import { FindBlockchainNetworkDto } from '../../../modules/dbl/blockchain/network/dto';
+import { FindBlockchainNetworkDto } from '../../../../modules/dbl/blockchain/network/dto';
 import { BlockchainNetworkEntity } from './blockchain-network.entity';
 
 export type BlockchainNetworkDocument = HydratedDocument<BlockchainNetwork> & TStaticMethods;
