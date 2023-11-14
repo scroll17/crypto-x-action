@@ -1,7 +1,6 @@
 import { Types } from 'mongoose';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FindCommentDto } from '../../comment/dto';
 import { PaginateResultEntity } from '@common/entities';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -10,6 +9,7 @@ import {
   BlockchainNetworkEntity,
   BlockchainNetworkDocument,
 } from 'src/database/schemas/blockcain/network';
+import { FindBlockchainNetworkDto } from './dto';
 
 @Injectable()
 export class BlockchainNetworkService {
@@ -20,7 +20,7 @@ export class BlockchainNetworkService {
     @InjectModel(BlockchainNetwork.name) private readonly blockchainNetworkModel: BlockchainNetworkModel,
   ) {}
 
-  public async getAll(dto: FindCommentDto): Promise<PaginateResultEntity<BlockchainNetworkEntity>> {
+  public async getAll(dto: FindBlockchainNetworkDto): Promise<PaginateResultEntity<BlockchainNetworkEntity>> {
     this.logger.debug('Get all blockchain networks', { ...dto });
 
     const networks = await this.blockchainNetworkModel.paginate(dto);
