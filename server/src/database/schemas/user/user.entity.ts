@@ -17,6 +17,14 @@ export class UserEntity implements User {
   })
   name: string;
 
+  @ApiPropertyOptional()
+  @ApiProperty({
+    type: String,
+    example: '_Angel_',
+    description: 'The username in Telegram of User',
+  })
+  username: string;
+
   @ApiProperty({
     type: String,
     example: 'test@test.com',
@@ -54,9 +62,10 @@ export class UserEntity implements User {
 
   @ApiPropertyOptional()
   @ApiProperty({
-    type: String,
-    example: '_Angel_',
-    description: 'The username in Telegram of User',
+    type: Date,
+    format: 'date-time',
+    example: '2023-03-27T17:32:28Z',
+    description: 'Time when user had last activity',
   })
-  username: string;
+  lastActivityAt: Date;
 }

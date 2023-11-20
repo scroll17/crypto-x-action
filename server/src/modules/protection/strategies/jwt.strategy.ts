@@ -58,6 +58,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new HttpException('Secret is invalid', HttpStatus.FORBIDDEN);
     }
 
+    await this.userModel.updateOne(
+      {
+        _id: user._id,
+      },
+      {
+        lastActivityAt: new Date(),
+      },
+    );
+
     return user;
   }
 }

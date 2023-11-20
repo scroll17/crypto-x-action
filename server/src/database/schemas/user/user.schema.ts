@@ -16,6 +16,9 @@ export class User {
   @Prop({ type: String, required: true })
   name: string;
 
+  @Prop({ type: String })
+  username?: string;
+
   @Prop({ type: String, required: true, unique: true })
   email: string;
 
@@ -35,8 +38,8 @@ export class User {
   @Prop({ type: Boolean, required: true })
   isAdmin: boolean;
 
-  @Prop({ type: String, required: false })
-  username?: string;
+  @Prop({ type: Date, default: null })
+  lastActivityAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User) as unknown as MongooseSchema<
