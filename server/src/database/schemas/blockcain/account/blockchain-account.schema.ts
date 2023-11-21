@@ -115,6 +115,22 @@ BlockchainAccountSchema.statics.paginate = async function (
   const total = await this.count(where);
   const data = (await this.aggregate()
     .match(where)
+    .lookup({
+      from: COMMENT_COLLECTION_NAME,
+      localField: 'comments',
+      foreignField: '_id',
+      as: 'comments',
+    })
+    .lookup({
+      from: USER_COLLECTION_NAME,
+      localField: 'createdBy',
+      foreignField: '_id',
+      as: 'createdBy',
+    })
+    .unwind({
+      path: '$createdBy',
+      preserveNullAndEmptyArrays: true,
+    })
     .skip(skip)
     .limit(count)
     .sort(sort ? { [sort.name]: sort.type } : { _id: 'desc' })
