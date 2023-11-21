@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '@common/pipes';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -63,5 +63,22 @@ export class BlockchainAccountController {
   @ApiParam({ name: 'id', type: String, description: 'The ObjectId in the String view' })
   async getById(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.blockchainAccountService.getById(id);
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Delete blockchain account by id.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The result of deletion.',
+    type: Boolean,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiNotFoundResponse({ description: 'Blockchain account not found' })
+  @ApiParam({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  async remove(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    await this.blockchainAccountService.remove(id);
+    return true;
   }
 }

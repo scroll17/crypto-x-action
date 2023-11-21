@@ -7,6 +7,8 @@ import {
   BlockchainAccountSchema,
   BlockchainNetwork,
   BlockchainNetworkSchema,
+  Comment,
+  CommentSchema,
 } from '@schemas/index';
 
 @Module({
@@ -19,6 +21,10 @@ import {
       {
         name: BlockchainNetwork.name,
         schema: BlockchainNetworkSchema,
+      },
+      {
+        name: Comment.name,
+        schema: CommentSchema,
       },
     ]),
   ],

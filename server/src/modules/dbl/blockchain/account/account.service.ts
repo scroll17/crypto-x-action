@@ -13,6 +13,7 @@ import {
 import { BlockchainNetwork, BlockchainNetworkModel } from '@schemas/blockcain/network';
 import { CreateBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
 import { PaginateResultEntity } from '@common/entities';
+import { Comment, CommentModel } from '@schemas/comment';
 
 @Injectable()
 export class BlockchainAccountService {
@@ -20,6 +21,7 @@ export class BlockchainAccountService {
 
   constructor(
     private readonly configService: ConfigService,
+    @InjectModel(Comment.name) private readonly commentModel: CommentModel,
     @InjectModel(BlockchainAccount.name) private readonly blockchainAccountModel: BlockchainAccountModel,
     @InjectModel(BlockchainNetwork.name) private readonly blockchainNetworkModel: BlockchainNetworkModel,
   ) {}
@@ -66,11 +68,41 @@ export class BlockchainAccountService {
       id,
     });
 
-    const account = await this.blockchainAccountModel.findById(id).exec();
+    const [account] = await this.blockchainAccountModel.findByWithRelationships({ _id: id });
     if (!account) {
       throw new HttpException('Blockchain account not found', HttpStatus.NOT_FOUND);
     }
 
     return account;
+  }
+
+  public async remove(id: Types.ObjectId): Promise<void> {
+    this.logger.debug('Remove blockchain account by id', {
+      id,
+    });
+
+    const account = await this.blockchainAccountModel.findById(id).exec();
+    if (!account) {
+      throw new HttpException('Blockchain account not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Account
+    await this.blockchainAccountModel.deleteOne({
+      _id: account._id,
+    });
+    this.logger.debug('Blockchain account deleted', {
+      id: account._id,
+      name: account.name,
+    });
+
+    // Comments
+    if (account.comments.length > 0) {
+      const deleteResult = await this.commentModel.deleteMany({
+        _id: {
+          $in: account.comments,
+        },
+      });
+      this.logger.debug('Delete blockchain comments result', { ...deleteResult });
+    }
   }
 }
