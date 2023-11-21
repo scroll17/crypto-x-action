@@ -25,8 +25,9 @@ import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserPaginateResultEntity } from '../user/entities/user-paginate-result.entity';
 import { ParseObjectIdPipe } from '@common/pipes';
 import { CommentEntity } from '@schemas/comment';
-import { CreateCommentDto, EditCommentDto, FindCommentDto } from './dto';
+import { EditCommentDto, FindCommentDto } from './dto';
 import { UserDocument } from '@schemas/user';
+import { CreateCommentDto } from '@common/dto';
 
 @Controller('comment')
 @ApiTags('Comment')

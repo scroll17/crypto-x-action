@@ -1,11 +1,23 @@
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '@common/pipes';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -13,7 +25,7 @@ import { BlockchainAccountService } from './account.service';
 import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserDocument } from '@schemas/user';
 import { BlockchainAccountEntity } from '@schemas/blockcain/account';
-import { CreateBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
+import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
 import { BlockchainAccountPaginateResultEntity } from './entities';
 
 @Controller('blockchain/account')
@@ -31,8 +43,30 @@ export class BlockchainAccountController {
     type: BlockchainAccountEntity,
   })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
+  @ApiForbiddenResponse({ description: 'Account with passed name already exists.' })
   async add(@CurrentUser() user: UserDocument, @Body() dto: CreateBlockchainAccountDto) {
     return this.blockchainAccountService.add(user, dto);
+  }
+
+  @Patch('/edit')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Update blockchain account by id.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Updated Blockchain Account document.',
+    type: BlockchainAccountEntity,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiNotFoundResponse({ description: 'Blockchain account not found' })
+  @ApiForbiddenResponse({ description: 'Account with passed name already exists.' })
+  @ApiQuery({ name: 'id', type: String, description: 'The ObjectId in the String view' })
+  async edit(
+    @CurrentUser() user: UserDocument,
+    @Query('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() dto: EditBlockchainAccountDto,
+  ) {
+    return this.blockchainAccountService.edit(user, id, dto);
   }
 
   @Post('/all')
@@ -91,8 +125,8 @@ export class BlockchainAccountController {
   @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiNotFoundResponse({ description: 'Blockchain account not found' })
   @ApiParam({ name: 'id', type: String, description: 'The ObjectId in the String view' })
-  async remove(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
-    await this.blockchainAccountService.remove(id);
+  async remove(@CurrentUser() user: UserDocument, @Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
+    await this.blockchainAccountService.remove(user, id);
     return true;
   }
 }

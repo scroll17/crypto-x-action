@@ -11,7 +11,7 @@ import {
   BlockchainAccountModel,
 } from '@schemas/blockcain/account';
 import { BlockchainNetwork, BlockchainNetworkModel } from '@schemas/blockcain/network';
-import { CreateBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
+import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
 import { PaginateResultEntity } from '@common/entities';
 import { Comment, CommentModel } from '@schemas/comment';
 
@@ -39,6 +39,7 @@ export class BlockchainAccountService {
 
     const accountsCount = await this.blockchainAccountModel.count({ name: dto.name });
     if (accountsCount > 0) {
+      this.logger.warn('Account with passed name already exists', { name: dto.name });
       throw new HttpException('Account with passed name already exists', HttpStatus.FORBIDDEN);
     }
 
@@ -54,6 +55,50 @@ export class BlockchainAccountService {
     });
 
     return newAccount;
+  }
+
+  public async edit(
+    user: UserDocument,
+    id: Types.ObjectId,
+    dto: EditBlockchainAccountDto,
+  ): Promise<BlockchainAccountDocument> {
+    this.logger.debug('Update blockchain account by id', {
+      id,
+      admin: _.pick(user, ['_id', 'email']),
+      data: dto,
+    });
+
+    if (Object.keys(dto).filter(Boolean).length === 0) {
+      throw new HttpException('No data for updating', HttpStatus.BAD_REQUEST);
+    }
+
+    const account = await this.blockchainAccountModel.findById(id).exec();
+    if (!account) {
+      throw new HttpException('Blockchain account not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!account.createdBy._id.equals(user._id)) {
+      throw new HttpException('Cant delete foreign account', HttpStatus.FORBIDDEN);
+    }
+
+    if (dto.name) {
+      const accountsCount = await this.blockchainAccountModel.count({ name: dto.name });
+      if (accountsCount > 0) {
+        this.logger.warn('Account with passed name already exists', { name: dto.name });
+        throw new HttpException('Account with passed name already exists', HttpStatus.FORBIDDEN);
+      }
+    }
+
+    // const updatedAccount = await this.blockchainAccountModel.updateRole(account, dto);
+    // this.logger.debug('Blockchain account updated', {
+    //   id: updatedAccount._id,
+    //   name: updatedAccount.name,
+    // });
+
+    const [accountWithRefs] = await this.blockchainAccountModel.findByWithRelationships({
+      _id: account._id,
+    });
+    return accountWithRefs;
   }
 
   public async getAll(dto: FindBlockchainAccountDto): Promise<PaginateResultEntity<BlockchainAccountEntity>> {
@@ -87,7 +132,7 @@ export class BlockchainAccountService {
     return await this.blockchainAccountModel.getUniqueLabels();
   }
 
-  public async remove(id: Types.ObjectId): Promise<void> {
+  public async remove(user: UserDocument, id: Types.ObjectId): Promise<void> {
     this.logger.debug('Remove blockchain account by id', {
       id,
     });
@@ -95,6 +140,10 @@ export class BlockchainAccountService {
     const account = await this.blockchainAccountModel.findById(id).exec();
     if (!account) {
       throw new HttpException('Blockchain account not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!account.createdBy._id.equals(user._id)) {
+      throw new HttpException('Cant delete foreign account', HttpStatus.FORBIDDEN);
     }
 
     // Account

@@ -4,9 +4,10 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument, CommentEntity, CommentModel } from '@schemas/comment';
 import { PaginateResultEntity } from '@common/entities';
-import { CreateCommentDto, EditCommentDto, FindCommentDto } from './dto';
+import { EditCommentDto, FindCommentDto } from './dto';
 import { Types } from 'mongoose';
 import { UserDocument } from '@schemas/user';
+import { CreateCommentDto } from '@common/dto';
 
 @Injectable()
 export class CommentService {
@@ -38,6 +39,7 @@ export class CommentService {
   public async edit(user: UserDocument, id: Types.ObjectId, dto: EditCommentDto): Promise<CommentDocument> {
     this.logger.debug('Update comment by id', {
       id,
+      admin: _.pick(user, ['_id', 'email']),
       data: dto,
     });
 
