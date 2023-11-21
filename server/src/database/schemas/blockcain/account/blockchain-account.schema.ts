@@ -43,6 +43,7 @@ BlockchainAccountSchema.index({
 
 // CUSTOM TYPES
 type TStaticMethods = {
+  getUniqueLabels: (this: BlockchainAccountModel) => Promise<string[]>;
   findByWithRelationships: (
     this: BlockchainAccountModel,
     options: FilterQuery<BlockchainAccountDocument>,
@@ -54,6 +55,33 @@ type TStaticMethods = {
 };
 
 // STATIC METHODS IMPLEMENTATION
+BlockchainAccountSchema.statics.getUniqueLabels = async function () {
+  const [result] = await this.aggregate([
+    {
+      $unwind: {
+        path: '$labels',
+      },
+    },
+    {
+      $group: {
+        _id: 1,
+        labelsMatrix: {
+          $push: '$labels',
+        },
+      },
+    },
+    {
+      $project: {
+        labels: {
+          $setUnion: '$labelsMatrix',
+        },
+      },
+    },
+  ]).exec();
+
+  return result.labels;
+} as TStaticMethods['getUniqueLabels'];
+
 BlockchainAccountSchema.statics.findByWithRelationships = async function (where) {
   return await this.aggregate([
     {
