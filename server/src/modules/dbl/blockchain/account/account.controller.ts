@@ -49,6 +49,20 @@ export class BlockchainAccountController {
     return this.blockchainAccountService.getAll(dto);
   }
 
+  @Get('/labels')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Get blockchain account unique labels.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The blockchain account unique labels.',
+    type: [String],
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  async getUniqueLabels() {
+    return this.blockchainAccountService.getUniqueLabels();
+  }
+
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   @AuthUser()

@@ -37,6 +37,11 @@ export class BlockchainAccountService {
       throw new HttpException('Network not found', HttpStatus.NOT_FOUND);
     }
 
+    const accountsCount = await this.blockchainAccountModel.count({ name: dto.name });
+    if (accountsCount > 0) {
+      throw new HttpException('Account with passed name already exists', HttpStatus.FORBIDDEN);
+    }
+
     const newAccount = await this.blockchainAccountModel.create({
       ...dto,
       comments: [],
@@ -74,6 +79,12 @@ export class BlockchainAccountService {
     }
 
     return account;
+  }
+
+  public async getUniqueLabels(): Promise<string[]> {
+    this.logger.debug('Get blockchain account unique labels', {});
+
+    return await this.blockchainAccountModel.getUniqueLabels();
   }
 
   public async remove(id: Types.ObjectId): Promise<void> {
