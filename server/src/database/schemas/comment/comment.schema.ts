@@ -4,7 +4,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes, Types } from 'mongoose';
 import { PaginateResultEntity } from '@common/entities';
 import { USER_COLLECTION_NAME, UserDocument } from '../user';
-import { EditCommentDto, FindCommentDto } from '../../../modules/dbl/comment/dto';
+import { DirectlyEditCommentDto, FindCommentDto } from '../../../modules/dbl/comment/dto';
 import { CommentEntity } from '@schemas/comment/comment.entity';
 
 export type CommentDocument = HydratedDocument<Comment> & TStaticMethods;
@@ -41,7 +41,7 @@ type TStaticMethods = {
   updateComment: (
     this: CommentModel,
     commentId: Types.ObjectId,
-    data: EditCommentDto,
+    data: DirectlyEditCommentDto,
   ) => Promise<CommentDocument>;
 };
 

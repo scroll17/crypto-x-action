@@ -1,14 +1,14 @@
 /*external modules*/
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { CommentEntity } from '@schemas/comment';
 import { Type } from 'class-transformer';
 import { EditAction } from '@common/enums';
-import { CreateCommentDto, RemoveCommentDto } from '@common/dto';
+import { CreateCommentDto } from './create-comment.dto';
+import { RemoveCommentDto } from './remove-comment.dto';
 import { EditPropertyDto } from '../edit-property.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-export class EditCommentDto extends EditPropertyDto<CommentEntity> {
+export class EditCommentDto extends EditPropertyDto<CreateCommentDto | RemoveCommentDto> {
   @IsNotEmpty()
   @Type((obj) => {
     if (!obj) {
@@ -20,7 +20,14 @@ export class EditCommentDto extends EditPropertyDto<CommentEntity> {
   })
   @ValidateNested()
   @ApiProperty({
-    oneOf: [{ $ref: getSchemaPath(CreateCommentDto) }, { $ref: getSchemaPath(RemoveCommentDto) }],
+    oneOf: [
+      {
+        $ref: getSchemaPath(CreateCommentDto),
+      },
+      {
+        $ref: getSchemaPath(RemoveCommentDto),
+      },
+    ],
   })
-  declare readonly value: CommentEntity;
+  declare readonly value: CreateCommentDto | RemoveCommentDto;
 }

@@ -1,19 +1,20 @@
 import * as _ from 'lodash';
-import { Types } from 'mongoose';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { UserDocument } from '@schemas/user';
-import { InjectModel } from '@nestjs/mongoose';
+import {Types} from 'mongoose';
+import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
+import {ConfigService} from '@nestjs/config';
+import {UserDocument} from '@schemas/user';
+import {InjectModel} from '@nestjs/mongoose';
 import {
   BlockchainAccount,
   BlockchainAccountDocument,
   BlockchainAccountEntity,
   BlockchainAccountModel,
 } from '@schemas/blockcain/account';
-import { BlockchainNetwork, BlockchainNetworkModel } from '@schemas/blockcain/network';
-import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
-import { PaginateResultEntity } from '@common/entities';
-import { Comment, CommentModel } from '@schemas/comment';
+import {BlockchainNetwork, BlockchainNetworkModel} from '@schemas/blockcain/network';
+import {CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto} from './dto';
+import {PaginateResultEntity} from '@common/entities';
+import {Comment, CommentModel} from '@schemas/comment';
+import {EditAction} from "@common/enums";
 
 @Injectable()
 export class BlockchainAccountService {
@@ -89,11 +90,18 @@ export class BlockchainAccountService {
       }
     }
 
-    // const updatedAccount = await this.blockchainAccountModel.updateRole(account, dto);
+    // const removeComments = (dto.comments ?? [])
+    //   .filter(c => c.action === EditAction.Remove)
+    //   .map(c => c.value._id)
+
+    // const updatedAccount = await this.blockchainAccountModel.updateAccount(account, dto);
     // this.logger.debug('Blockchain account updated', {
     //   id: updatedAccount._id,
     //   name: updatedAccount.name,
     // });
+    //
+    // const removeComments =
+    // if(dto.comments)
 
     const [accountWithRefs] = await this.blockchainAccountModel.findByWithRelationships({
       _id: account._id,

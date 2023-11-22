@@ -2,7 +2,7 @@
 import { IsArray, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { EditCommentDto } from '@common/dto';
+import { EditCommentDto } from '@common/dto/comment';
 import { EditBlockchainAccountLabelsDto } from './edit-blockchain-account-labels.dto';
 
 export class EditBlockchainAccountDto {

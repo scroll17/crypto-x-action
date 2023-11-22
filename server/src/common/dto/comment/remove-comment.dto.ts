@@ -1,12 +1,11 @@
 /*external modules*/
 import { IsNotEmpty } from 'class-validator';
-import { PickType } from '@nestjs/swagger';
-import { CommentEntity } from '@schemas/comment';
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { Types } from 'mongoose';
 import { BadRequestException } from '@nestjs/common';
 
-export class RemoveCommentDto extends PickType(CommentEntity, ['_id']) {
+export class RemoveCommentDto {
   @IsNotEmpty()
   @Type(() => Types.ObjectId)
   @Transform(({ value }) => {
@@ -15,6 +14,11 @@ export class RemoveCommentDto extends PickType(CommentEntity, ['_id']) {
     }
 
     return new Types.ObjectId(value);
+  })
+  @ApiProperty({
+    type: String,
+    example: '5349b4ddd2781d08c09890f4',
+    description: 'The entity ID in the MongoDB ObjectId string view',
   })
   readonly id: Types.ObjectId;
 }

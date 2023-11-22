@@ -13,6 +13,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -27,9 +28,11 @@ import { UserDocument } from '@schemas/user';
 import { BlockchainAccountEntity } from '@schemas/blockcain/account';
 import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
 import { BlockchainAccountPaginateResultEntity } from './entities';
+import { CreateCommentDto, RemoveCommentDto } from '@common/dto';
 
 @Controller('blockchain/account')
 @ApiTags('Blockchain', 'BlockchainAccount')
+@ApiExtraModels(CreateCommentDto, RemoveCommentDto)
 export class BlockchainAccountController {
   constructor(private readonly blockchainAccountService: BlockchainAccountService) {}
 
