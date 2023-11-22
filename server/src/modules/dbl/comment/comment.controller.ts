@@ -25,7 +25,7 @@ import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserPaginateResultEntity } from '../user/entities/user-paginate-result.entity';
 import { ParseObjectIdPipe } from '@common/pipes';
 import { CommentEntity } from '@schemas/comment';
-import { EditCommentDto, FindCommentDto } from './dto';
+import { DirectlyEditCommentDto, FindCommentDto } from './dto';
 import { UserDocument } from '@schemas/user';
 import { CreateCommentDto } from '@common/dto';
 
@@ -63,7 +63,7 @@ export class CommentController {
   async edit(
     @CurrentUser() user: UserDocument,
     @Query('id', ParseObjectIdPipe) id: Types.ObjectId,
-    @Body() dto: EditCommentDto,
+    @Body() dto: DirectlyEditCommentDto,
   ) {
     return this.commentService.edit(user, id, dto);
   }

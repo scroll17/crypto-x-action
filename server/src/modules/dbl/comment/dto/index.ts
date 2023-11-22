@@ -1,3 +1,3 @@
 export { CommentFilterDto } from './comment-filter.dto';
 export { FindCommentDto } from './find-comment.dto';
-export { EditCommentDto } from './edit-comment.dto';
+export { DirectlyEditCommentDto } from './directly-edit-comment.dto';

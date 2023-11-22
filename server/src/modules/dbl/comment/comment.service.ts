@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentDocument, CommentEntity, CommentModel } from '@schemas/comment';
 import { PaginateResultEntity } from '@common/entities';
-import { EditCommentDto, FindCommentDto } from './dto';
+import { DirectlyEditCommentDto, FindCommentDto } from './dto';
 import { Types } from 'mongoose';
 import { UserDocument } from '@schemas/user';
 import { CreateCommentDto } from '@common/dto';
@@ -36,7 +36,7 @@ export class CommentService {
     return newComment;
   }
 
-  public async edit(user: UserDocument, id: Types.ObjectId, dto: EditCommentDto): Promise<CommentDocument> {
+  public async edit(user: UserDocument, id: Types.ObjectId, dto: DirectlyEditCommentDto): Promise<CommentDocument> {
     this.logger.debug('Update comment by id', {
       id,
       admin: _.pick(user, ['_id', 'email']),

@@ -2,7 +2,7 @@
 import { IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class EditCommentDto {
+export class DirectlyEditCommentDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
