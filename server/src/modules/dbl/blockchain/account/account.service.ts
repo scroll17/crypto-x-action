@@ -1,20 +1,20 @@
 import * as _ from 'lodash';
-import {Types} from 'mongoose';
-import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
-import {ConfigService} from '@nestjs/config';
-import {UserDocument} from '@schemas/user';
-import {InjectModel} from '@nestjs/mongoose';
+import { Types } from 'mongoose';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { UserDocument } from '@schemas/user';
+import { InjectModel } from '@nestjs/mongoose';
 import {
   BlockchainAccount,
   BlockchainAccountDocument,
   BlockchainAccountEntity,
   BlockchainAccountModel,
 } from '@schemas/blockcain/account';
-import {BlockchainNetwork, BlockchainNetworkModel} from '@schemas/blockcain/network';
-import {CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto} from './dto';
-import {PaginateResultEntity} from '@common/entities';
-import {Comment, CommentModel} from '@schemas/comment';
-import {EditAction} from "@common/enums";
+import { BlockchainNetwork, BlockchainNetworkModel } from '@schemas/blockcain/network';
+import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
+import { PaginateResultEntity } from '@common/entities';
+import { Comment, CommentModel } from '@schemas/comment';
+import { EditAction } from '@common/enums';
 
 @Injectable()
 export class BlockchainAccountService {
@@ -79,7 +79,7 @@ export class BlockchainAccountService {
     }
 
     if (!account.createdBy._id.equals(user._id)) {
-      throw new HttpException('Cant delete foreign account', HttpStatus.FORBIDDEN);
+      throw new HttpException('Cant edit foreign account', HttpStatus.FORBIDDEN);
     }
 
     if (dto.name) {
@@ -90,18 +90,57 @@ export class BlockchainAccountService {
       }
     }
 
-    // const removeComments = (dto.comments ?? [])
-    //   .filter(c => c.action === EditAction.Remove)
-    //   .map(c => c.value._id)
+    const removeComments = dto.getComments(EditAction.Remove);
+    if (removeComments.length > 0) {
+      // Note: check that all comments exist and relate to current User
+      const commentsCount = await this.commentModel.count({
+        _id: {
+          $in: removeComments.map((c) => c.commentId),
+        },
+        createdBy: user._id,
+      });
+      if (removeComments.length !== commentsCount) {
+        this.logger.warn('Cant remove comments created by another user', { comments: removeComments });
+        throw new HttpException('Cant remove comments created by another user', HttpStatus.FORBIDDEN);
+      }
+    }
 
-    // const updatedAccount = await this.blockchainAccountModel.updateAccount(account, dto);
-    // this.logger.debug('Blockchain account updated', {
-    //   id: updatedAccount._id,
-    //   name: updatedAccount.name,
-    // });
-    //
-    // const removeComments =
-    // if(dto.comments)
+    const addComments = dto.getComments(EditAction.Add);
+    if (addComments.length > 0) {
+      // Note: check that all comments exist and relate to current User
+      const commentsCount = await this.commentModel.count({
+        _id: {
+          $in: addComments.map((c) => c.commentId),
+        },
+        createdBy: user._id,
+      });
+      if (addComments.length !== commentsCount) {
+        this.logger.warn('Cant add not existed comments or created by another user', {
+          comments: addComments,
+        });
+        throw new HttpException(
+          'Cant add not existed comments or created by another user',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
+
+    const updatedAccount = await this.blockchainAccountModel.updateAccount(account, dto);
+    this.logger.debug('Blockchain account updated', {
+      id: updatedAccount._id,
+      name: updatedAccount.name,
+    });
+
+    if (removeComments.length > 0) {
+      const removeResult = await this.commentModel.deleteMany({
+        _id: {
+          $in: removeComments.map((c) => c.commentId),
+        },
+      });
+      this.logger.debug('Removed Account comments', {
+        ...removeResult,
+      });
+    }
 
     const [accountWithRefs] = await this.blockchainAccountModel.findByWithRelationships({
       _id: account._id,

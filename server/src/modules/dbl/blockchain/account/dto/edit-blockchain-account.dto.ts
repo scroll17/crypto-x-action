@@ -4,6 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { EditCommentDto } from '@common/dto/comment';
 import { EditBlockchainAccountLabelsDto } from './edit-blockchain-account-labels.dto';
+import { EditAction } from '@common/enums';
 
 export class EditBlockchainAccountDto {
   @IsOptional()
@@ -32,4 +33,14 @@ export class EditBlockchainAccountDto {
     type: [EditBlockchainAccountLabelsDto],
   })
   readonly labels?: EditBlockchainAccountLabelsDto[];
+
+  public getLabels(actionType: EditAction) {
+    if (!this.labels) return [];
+    return this.labels.filter((l) => l.action === actionType).map((l) => l.value);
+  }
+
+  public getComments(actionType: EditAction) {
+    if (!this.comments) return [];
+    return this.comments.filter((l) => l.action === actionType).map((c) => c.value);
+  }
 }

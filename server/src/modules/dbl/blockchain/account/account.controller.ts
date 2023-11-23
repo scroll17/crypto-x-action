@@ -28,11 +28,11 @@ import { UserDocument } from '@schemas/user';
 import { BlockchainAccountEntity } from '@schemas/blockcain/account';
 import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
 import { BlockchainAccountPaginateResultEntity } from './entities';
-import { CreateCommentDto, RemoveCommentDto } from '@common/dto';
+import { CreateCommentDto, ChangeCommentDto } from '@common/dto';
 
 @Controller('blockchain/account')
 @ApiTags('Blockchain', 'BlockchainAccount')
-@ApiExtraModels(CreateCommentDto, RemoveCommentDto)
+@ApiExtraModels(CreateCommentDto, ChangeCommentDto)
 export class BlockchainAccountController {
   constructor(private readonly blockchainAccountService: BlockchainAccountService) {}
 
