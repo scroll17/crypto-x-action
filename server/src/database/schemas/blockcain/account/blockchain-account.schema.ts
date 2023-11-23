@@ -1,13 +1,17 @@
 import _ from 'lodash';
-import { Type } from '@nestjs/common';
+import { HttpException, HttpStatus, Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes } from 'mongoose';
+import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes, Types } from 'mongoose';
 import { USER_COLLECTION_NAME, UserDocument } from '../../user';
 import { COMMENT_COLLECTION_NAME, CommentDocument } from '@schemas/comment';
 import { BLOCKCHAIN_NETWORK_COLLECTION_NAME, BlockchainNetworkDocument } from '@schemas/blockcain/network';
 import { PaginateResultEntity } from '@common/entities';
 import { BlockchainAccountEntity } from '@schemas/blockcain/account/blockchain-account.entity';
-import { FindBlockchainAccountDto } from '../../../../modules/dbl/blockchain/account/dto';
+import {
+  EditBlockchainAccountDto,
+  FindBlockchainAccountDto,
+} from '../../../../modules/dbl/blockchain/account/dto';
+import { EditAction } from '@common/enums';
 
 export type BlockchainAccountDocument = HydratedDocument<BlockchainAccount> & TStaticMethods;
 export type BlockchainAccountModel = Model<BlockchainAccountDocument> & TStaticMethods;
@@ -52,6 +56,11 @@ type TStaticMethods = {
     this: BlockchainAccountModel,
     findOptions: FindBlockchainAccountDto,
   ) => Promise<PaginateResultEntity<BlockchainAccountEntity>>;
+  updateAccount: (
+    this: BlockchainAccountModel,
+    account: BlockchainAccountDocument,
+    data: EditBlockchainAccountDto,
+  ) => Promise<BlockchainAccountDocument>;
 };
 
 // STATIC METHODS IMPLEMENTATION
@@ -174,3 +183,65 @@ BlockchainAccountSchema.statics.paginate = async function (
     },
   };
 } as TStaticMethods['paginate'];
+
+BlockchainAccountSchema.statics.updateAccount = async function (
+  account,
+  data,
+): Promise<BlockchainAccountDocument> {
+  const updateData: Partial<BlockchainAccount> = {};
+
+  if ('name' in data && data.name) {
+    updateData.name = data.name;
+  }
+
+  if ('comments' in data && data.comments) {
+    let newComments = [...account.comments] as unknown as Types.ObjectId[];
+
+    data.comments.forEach((commentAction) => {
+      const { action, value: commentConfig } = commentAction;
+
+      switch (action) {
+        case EditAction.Add: {
+          if (newComments.some((commentId) => commentId.equals(commentConfig.commentId))) {
+            throw new HttpException('Comment already exists in the Account', HttpStatus.FORBIDDEN);
+          }
+
+          newComments.push(commentConfig.commentId);
+          break;
+        }
+        case EditAction.Remove: {
+          newComments = newComments.filter((commentId) => !commentId.equals(commentConfig.commentId));
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    });
+
+    updateData.comments = newComments as unknown as CommentDocument[];
+  }
+
+  if ('labels' in data && data.labels) {
+    let newLabels = [...account.labels];
+
+    newLabels = _.without(newLabels, ...data.getLabels(EditAction.Remove).map((l) => l.label));
+    newLabels = _.uniq([...newLabels, ...data.getLabels(EditAction.Add).map((l) => l.label)]);
+
+    updateData.labels = newLabels;
+  }
+
+  const updatedAccount = await this.findOneAndUpdate(
+    {
+      _id: account._id,
+    },
+    {
+      $set: updateData,
+    },
+    {
+      returnOriginal: false,
+    },
+  ).exec();
+
+  return updatedAccount!;
+} as TStaticMethods['updateAccount'];
