@@ -31,6 +31,7 @@ import { CommentModule } from './modules/dbl/comment/comment.module';
 import { BlockchainAccountModule } from './modules/dbl/blockchain/account/account.module';
 import { BlockchainNetworkModule } from './modules/dbl/blockchain/network/network.module';
 import { EthereumNetworkModule } from './modules/networks/ethereum/ethereum.module';
+import { StarknetNetworkModule } from './modules/networks/starknet/starknet.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { EthereumNetworkModule } from './modules/networks/ethereum/ethereum.modu
     BlockchainNetworkModule,
     // Network
     EthereumNetworkModule,
+    StarknetNetworkModule,
     // Other
     TelegramModule,
     AdminModule,
