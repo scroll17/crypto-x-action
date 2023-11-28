@@ -14,6 +14,10 @@ export class BlockchainNetworkSeed {
       name: BlockchainNetworks.Ethereum,
       description: `The Ethereum network`,
     },
+    {
+      name: BlockchainNetworks.StarkNet,
+      description: `The StarkNet network`,
+    },
   ];
 
   constructor(
