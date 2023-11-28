@@ -30,6 +30,7 @@ import { ProtectionMiddleware } from '@common/middlewares';
 import { CommentModule } from './modules/dbl/comment/comment.module';
 import { BlockchainAccountModule } from './modules/dbl/blockchain/account/account.module';
 import { BlockchainNetworkModule } from './modules/dbl/blockchain/network/network.module';
+import { EthereumNetworkModule } from './modules/networks/ethereum/ethereum.module';
 
 @Module({
   imports: [
@@ -76,6 +77,8 @@ import { BlockchainNetworkModule } from './modules/dbl/blockchain/network/networ
     CommentModule,
     BlockchainAccountModule,
     BlockchainNetworkModule,
+    // Network
+    EthereumNetworkModule,
     // Other
     TelegramModule,
     AdminModule,

@@ -31,7 +31,7 @@ import { BlockchainAccountPaginateResultEntity } from './entities';
 import { CreateCommentDto, ChangeCommentDto } from '@common/dto';
 
 @Controller('blockchain/account')
-@ApiTags('Blockchain', 'BlockchainAccount')
+@ApiTags('BlockchainAccount')
 @ApiExtraModels(CreateCommentDto, ChangeCommentDto)
 export class BlockchainAccountController {
   constructor(private readonly blockchainAccountService: BlockchainAccountService) {}

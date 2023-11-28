@@ -16,7 +16,7 @@ import { ParseObjectIdPipe } from '@common/pipes';
 import { BlockchainNetworkEntity } from 'src/database/schemas/blockcain/network';
 
 @Controller('blockchain/network')
-@ApiTags('Blockchain', 'BlockchainNetwork')
+@ApiTags('BlockchainNetwork')
 export class BlockchainNetworkController {
   constructor(private readonly blockchainNetworkService: BlockchainNetworkService) {}
 
