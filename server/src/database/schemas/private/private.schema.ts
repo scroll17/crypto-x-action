@@ -33,15 +33,32 @@ export const PrivateSchema = SchemaFactory.createForClass(Private) as unknown as
 
 // CUSTOM TYPES
 type TStaticMethods = {
-  getRawValue: (this: PrivateModel, record: PrivateDocument) => string;
-  getSeedPhrase: (this: PrivateModel, record: PrivateDocument) => string[];
+  getRawValue: (this: PrivateModel, record: PrivateDocument) => Promise<string>;
+  getPrivateKey: (this: PrivateModel, record: PrivateDocument) => Promise<string>;
+  getLoginPassword: (
+    this: PrivateModel,
+    record: PrivateDocument,
+  ) => Promise<{ login: string; password: string }>;
+  getSeedPhrase: (this: PrivateModel, record: PrivateDocument) => Promise<string[]>;
 };
 
 // STATIC METHODS IMPLEMENTATION
-PrivateSchema.statics.getRawValue = function (record) {
+PrivateSchema.statics.getRawValue = async function (record) {
   return record.value;
 } as TStaticMethods['getRawValue'];
 
-PrivateSchema.statics.getSeedPhrase = function (record) {
+PrivateSchema.statics.getPrivateKey = async function (record) {
+  return record.value;
+} as TStaticMethods['getPrivateKey'];
+
+PrivateSchema.statics.getLoginPassword = async function (record) {
+  const { login, password } = JSON.parse(record.value);
+  return {
+    login,
+    password,
+  };
+} as TStaticMethods['getLoginPassword'];
+
+PrivateSchema.statics.getSeedPhrase = async function (record) {
   return JSON.parse(record.value) as string[];
 } as TStaticMethods['getSeedPhrase'];
