@@ -1,10 +1,12 @@
 import _ from 'lodash';
+import { Exclude } from 'class-transformer';
 import { HttpException, HttpStatus, Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema, SchemaTypes, Types } from 'mongoose';
 import { USER_COLLECTION_NAME, UserDocument } from '../../user';
 import { COMMENT_COLLECTION_NAME, CommentDocument } from '@schemas/comment';
 import { BLOCKCHAIN_NETWORK_COLLECTION_NAME, BlockchainNetworkDocument } from '@schemas/blockcain/network';
+import { PRIVATE_COLLECTION_NAME, PrivateDocument } from '@schemas/private';
 import { PaginateResultEntity } from '@common/entities';
 import { BlockchainAccountEntity } from '@schemas/blockcain/account/blockchain-account.entity';
 import {
@@ -31,6 +33,10 @@ export class BlockchainAccount {
 
   @Prop({ type: [SchemaTypes.ObjectId], ref: COMMENT_COLLECTION_NAME, required: true, default: [] })
   comments: CommentDocument[];
+
+  @Exclude({ toClassOnly: true })
+  @Prop({ type: SchemaTypes.ObjectId, ref: PRIVATE_COLLECTION_NAME, required: false })
+  _private?: PrivateDocument;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: USER_COLLECTION_NAME, required: true })
   createdBy: UserDocument;
@@ -60,6 +66,11 @@ type TStaticMethods = {
     this: BlockchainAccountModel,
     account: BlockchainAccountDocument,
     data: EditBlockchainAccountDto,
+  ) => Promise<BlockchainAccountDocument>;
+  addPrivate: (
+    this: BlockchainAccountModel,
+    account: BlockchainAccountDocument,
+    _private: Types.ObjectId,
   ) => Promise<BlockchainAccountDocument>;
 };
 
@@ -118,6 +129,20 @@ BlockchainAccountSchema.statics.findByWithRelationships = async function (where)
         preserveNullAndEmptyArrays: true,
       },
     },
+    {
+      $lookup: {
+        from: PRIVATE_COLLECTION_NAME,
+        foreignField: '_id',
+        localField: '_private',
+        as: '_private',
+      },
+    },
+    {
+      $unwind: {
+        path: '$_private',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
   ]).exec();
 } as TStaticMethods['findByWithRelationships'];
 
@@ -168,6 +193,7 @@ BlockchainAccountSchema.statics.paginate = async function (
       path: '$createdBy',
       preserveNullAndEmptyArrays: true,
     })
+    .project({ _private: 0 })
     .skip(skip)
     .limit(count)
     .sort(sort ? { [sort.name]: sort.type } : { _id: 'desc' })
@@ -245,3 +271,24 @@ BlockchainAccountSchema.statics.updateAccount = async function (
 
   return updatedAccount!;
 } as TStaticMethods['updateAccount'];
+
+BlockchainAccountSchema.statics.addPrivate = async function (
+  account,
+  _private,
+): Promise<BlockchainAccountDocument> {
+  const updatedAccount = await this.findOneAndUpdate(
+    {
+      _id: account._id,
+    },
+    {
+      $set: {
+        _private,
+      },
+    },
+    {
+      returnOriginal: false,
+    },
+  ).exec();
+
+  return updatedAccount!;
+} as TStaticMethods['addPrivate'];
