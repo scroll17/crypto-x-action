@@ -1,3 +1,3 @@
 export enum ConstantEntities {
-  CATEGORIES = 'categories',
+  Categories = 'categories',
 }
