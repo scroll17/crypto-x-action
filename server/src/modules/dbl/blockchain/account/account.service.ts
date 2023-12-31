@@ -58,6 +58,9 @@ export class BlockchainAccountService {
       createdBy: user._id,
     });
 
+    // TODO: call the event "addPrivate" via the Telegram bot.
+    //  Otherwise the record about account wouldn't have ability to sign anything
+
     this.logger.debug('Created new Blockchain Account record', {
       name: newAccount.name,
       labels: newAccount.labels,
