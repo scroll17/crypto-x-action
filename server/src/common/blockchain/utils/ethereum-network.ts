@@ -1,5 +1,5 @@
-import {Injectable, Logger} from '@nestjs/common';
-import { HttpProvider, Web3 } from 'web3/lib/types';
+import { Injectable, Logger } from '@nestjs/common';
+import { HttpProvider, Web3 } from 'web3';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
