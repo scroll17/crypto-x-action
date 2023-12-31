@@ -7,10 +7,10 @@ ENV CLI_PATH ./dist/cli.js
 ENV TZ=Europe/Kiev
 ENV NODE_OPTIONS=--max_old_space_size=2548
 
-RUN apt-get update -y && \
-    apt-get install -yq tzdata && \
-    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
-    dpkg-reconfigure -f noninteractive tzdata
+#RUN apt-get update -y && \
+#    apt-get install -yq tzdata && \
+#    ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
+#    dpkg-reconfigure -f noninteractive tzdata
 
 WORKDIR $API_DIR
 
