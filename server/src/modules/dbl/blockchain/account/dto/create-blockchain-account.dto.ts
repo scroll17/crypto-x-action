@@ -1,9 +1,10 @@
 /*external modules*/
-import { IsArray, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { Transform, Type } from 'class-transformer';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { BlockchainAccountNetworkInfoDto } from './blockchain-account-network-info.dto';
 
 export class CreateBlockchainAccountDto {
   @IsString()
@@ -39,4 +40,12 @@ export class CreateBlockchainAccountDto {
     description: 'The ObjectId in the String view',
   })
   readonly network: Types.ObjectId;
+
+  @IsNotEmpty()
+  @Type(() => BlockchainAccountNetworkInfoDto)
+  @ValidateNested({ each: true })
+  @ApiProperty({
+    type: BlockchainAccountNetworkInfoDto,
+  })
+  readonly networkInfo: BlockchainAccountNetworkInfoDto;
 }

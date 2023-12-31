@@ -46,7 +46,7 @@ export class BlockchainAccountEntity implements BlockchainAccount {
     type: BlockchainAccountNetworkInfoEntity,
     description: 'The object with detailed information about network',
   })
-  device: BlockchainAccountNetworkInfoEntity;
+  networkInfo: BlockchainAccountNetworkInfoEntity;
 
   @ApiProperty({
     type: [CommentEntity],

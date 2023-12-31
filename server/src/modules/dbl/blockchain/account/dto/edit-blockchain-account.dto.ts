@@ -5,6 +5,7 @@ import { Type } from 'class-transformer';
 import { EditCommentDto } from '@common/dto/comment';
 import { EditBlockchainAccountLabelsDto } from './edit-blockchain-account-labels.dto';
 import { EditAction } from '@common/enums';
+import { BlockchainAccountNetworkInfoDto } from './blockchain-account-network-info.dto';
 
 export class EditBlockchainAccountDto {
   @IsOptional()
@@ -42,6 +43,14 @@ export class EditBlockchainAccountDto {
     type: [EditBlockchainAccountLabelsDto],
   })
   readonly labels?: EditBlockchainAccountLabelsDto[];
+
+  @IsOptional()
+  @Type(() => BlockchainAccountNetworkInfoDto)
+  @ValidateNested({ each: true })
+  @ApiProperty({
+    type: BlockchainAccountNetworkInfoDto,
+  })
+  readonly networkInfo?: BlockchainAccountNetworkInfoDto;
 
   public getLabels(actionType: EditAction) {
     if (!this.labels) return [];
