@@ -28,6 +28,11 @@ export class BlockchainAccount {
   @Prop({ type: [String], required: true, default: [] })
   labels: string[];
 
+  @Prop({ type: String, required: true, unique: true })
+  address: string;
+
+  // 2. network info (name, url)
+
   @Prop({ type: SchemaTypes.ObjectId, ref: BLOCKCHAIN_NETWORK_COLLECTION_NAME, required: true })
   network: BlockchainNetworkDocument;
 
@@ -164,6 +169,9 @@ BlockchainAccountSchema.statics.paginate = async function (
   if ('name' in where && where.name) {
     where.name = { $regex: where.name, $options: 'i' };
   }
+  if ('address' in where && where.address) {
+    where.address = { $regex: where.address, $options: 'i' };
+  }
   if ('labels' in where && where.labels) {
     where.labels = { $in: where.labels };
   }
@@ -177,6 +185,16 @@ BlockchainAccountSchema.statics.paginate = async function (
   const total = await this.count(where);
   const data = (await this.aggregate()
     .match(where)
+    .lookup({
+      from: BLOCKCHAIN_NETWORK_COLLECTION_NAME,
+      localField: 'network',
+      foreignField: '_id',
+      as: 'network',
+    })
+    .unwind({
+      path: '$network',
+      preserveNullAndEmptyArrays: true,
+    })
     .lookup({
       from: COMMENT_COLLECTION_NAME,
       localField: 'comments',
@@ -218,6 +236,10 @@ BlockchainAccountSchema.statics.updateAccount = async function (
 
   if ('name' in data && data.name) {
     updateData.name = data.name;
+  }
+
+  if ('address' in data && data.address) {
+    updateData.address = data.address;
   }
 
   if ('comments' in data && data.comments) {

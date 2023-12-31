@@ -38,10 +38,18 @@ export class BlockchainAccountService {
       throw new HttpException('Network not found', HttpStatus.NOT_FOUND);
     }
 
-    const accountsCount = await this.blockchainAccountModel.count({ name: dto.name });
+    // UNIQUE name
+    let accountsCount = await this.blockchainAccountModel.count({ name: dto.name });
     if (accountsCount > 0) {
-      this.logger.warn('Account with passed name already exists', { name: dto.name });
-      throw new HttpException('Account with passed name already exists', HttpStatus.FORBIDDEN);
+      this.logger.warn('Account with passed "name" already exists', { name: dto.name });
+      throw new HttpException('Account with passed "name" already exists', HttpStatus.FORBIDDEN);
+    }
+
+    // UNIQUE address
+    accountsCount = await this.blockchainAccountModel.count({ address: dto.address });
+    if (accountsCount > 0) {
+      this.logger.warn('Account with passed "address" already exists', { address: dto.address });
+      throw new HttpException('Account with passed "address" already exists', HttpStatus.FORBIDDEN);
     }
 
     const newAccount = await this.blockchainAccountModel.create({
@@ -87,6 +95,14 @@ export class BlockchainAccountService {
       if (accountsCount > 0) {
         this.logger.warn('Account with passed name already exists', { name: dto.name });
         throw new HttpException('Account with passed name already exists', HttpStatus.FORBIDDEN);
+      }
+    }
+
+    if (dto.address) {
+      const accountsCount = await this.blockchainAccountModel.count({ address: dto.address });
+      if (accountsCount > 0) {
+        this.logger.warn('Account with passed "address" already exists', { address: dto.address });
+        throw new HttpException('Account with passed "address" already exists', HttpStatus.FORBIDDEN);
       }
     }
 

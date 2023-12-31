@@ -17,6 +17,15 @@ export class EditBlockchainAccountDto {
   readonly name?: string;
 
   @IsOptional()
+  @IsString()
+  @MinLength(8)
+  @ApiProperty({
+    type: String,
+    example: '0x4A24FE8E61E0b57529B6642293626aFD407b03c9',
+  })
+  readonly address?: string;
+
+  @IsOptional()
   @IsArray()
   @Type(() => EditCommentDto)
   @ValidateNested({ each: true })

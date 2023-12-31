@@ -33,6 +33,16 @@ export class BlockchainAccountFilterDto {
   readonly name?: string;
 
   @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @ApiProperty({
+    type: String,
+    example: '0x4A24FE8E61E0b57529B6642293626aFD407b03c9',
+    description: 'The network shape blockchain account address',
+  })
+  readonly address?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @ApiProperty({
