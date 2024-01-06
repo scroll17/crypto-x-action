@@ -2,10 +2,15 @@ import _ from 'lodash';
 import { Type } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FilterQuery, HydratedDocument, Model, Schema as MongooseSchema } from 'mongoose';
-import { BlockchainNetworks } from '@common/blockchain/enums';
+import {
+  BlockchainNetworkFamily,
+  BlockchainNetworkName,
+  BlockchainNetworkPrototypeLevel,
+} from '@common/blockchain/enums';
 import { PaginateResultEntity } from '@common/entities';
 import { FindBlockchainNetworkDto } from '../../../../modules/dbl/blockchain/network/dto';
 import { BlockchainNetworkEntity } from './blockchain-network.entity';
+import { BlockchainNetworkConnect } from '@schemas/blockcain/network/connect/blockchain-network-connect.schema';
 
 export type BlockchainNetworkDocument = HydratedDocument<BlockchainNetwork> & TStaticMethods;
 export type BlockchainNetworkModel = Model<BlockchainNetworkDocument> & TStaticMethods;
@@ -17,13 +22,53 @@ export class BlockchainNetwork {
   @Prop({
     type: String,
     required: true,
-    unique: true,
-    enum: Object.values(BlockchainNetworks),
+    enum: Object.values(BlockchainNetworkFamily),
   })
-  name: BlockchainNetworks;
+  family: BlockchainNetworkFamily;
+
+  @Prop({
+    type: String,
+    required: true,
+    enum: Object.values(BlockchainNetworkName),
+  })
+  name: BlockchainNetworkName;
+
+  @Prop({ type: String, required: true })
+  localName: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    enum: Object.values(BlockchainNetworkPrototypeLevel),
+  })
+  prototypeLevel: BlockchainNetworkPrototypeLevel;
+
+  @Prop({ type: String, required: true })
+  currencySymbol: string;
+
+  @Prop({ type: Number, required: false, default: null })
+  networkId: number | null;
+
+  @Prop({ type: String, required: false, default: null })
+  scan: string | null;
+
+  @Prop({ type: BlockchainNetworkConnect, required: true })
+  httpConnect: BlockchainNetworkConnect;
+
+  @Prop({ type: BlockchainNetworkConnect, required: false })
+  socketConnect?: BlockchainNetworkConnect;
+
+  @Prop({ type: String, required: true, unique: true })
+  innerKey: string;
 
   @Prop({ type: String, required: true })
   description: string;
+
+  @Prop({ type: Boolean, required: true })
+  available: boolean;
+
+  @Prop({ type: Date, required: false, default: null })
+  removedAt: Date | null; // time when this Network was removed
 }
 
 export const BlockchainNetworkSchema = SchemaFactory.createForClass(
@@ -31,6 +76,15 @@ export const BlockchainNetworkSchema = SchemaFactory.createForClass(
 ) as unknown as MongooseSchema<Type<BlockchainNetwork>, BlockchainNetworkModel>;
 
 // INDEXES
+BlockchainNetworkSchema.index(
+  {
+    family: 1,
+    name: 1,
+    localName: 1,
+    'httpConnect.url': 1,
+  },
+  { unique: true },
+);
 
 // CUSTOM TYPES
 type TStaticMethods = {
