@@ -5,5 +5,5 @@ export interface IBlockchainNetworkEnvConfigDetails {
   prototypeLevel: BlockchainNetworkPrototypeLevel; // mainnet, testnet
   currencySymbol: string;
   networkId: number | null;
-  scan?: string;
+  scan: string | null;
 }

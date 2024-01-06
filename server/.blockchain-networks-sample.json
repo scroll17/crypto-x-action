@@ -15,7 +15,7 @@
         "url": "https://goerli.infura.io/v3/23e0d4a5f36sdfsdfsdf",
         "connectOptions": {}
       },
-      "ws": {
+      "socket": {
         "url": "wss://goerli.infura.io/ws/v3/23e0d4a5f3604sdfsdfsdfsdf",
         "connectOptions": {}
       }
