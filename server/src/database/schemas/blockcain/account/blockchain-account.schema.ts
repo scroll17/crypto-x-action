@@ -109,7 +109,7 @@ BlockchainAccountSchema.statics.getUniqueLabels = async function () {
     },
   ]).exec();
 
-  return result.labels;
+  return result?.labels ?? [];
 } as TStaticMethods['getUniqueLabels'];
 
 BlockchainAccountSchema.statics.findByWithRelationships = async function (where) {
