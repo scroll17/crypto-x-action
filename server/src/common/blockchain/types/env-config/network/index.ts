@@ -1,2 +1,3 @@
-export { TEthBlockchainNetworksConfig } from './eth-networks-config.type';
-export { TBlockchainNetworksConfig } from './networks-config.type';
+export * from './evm';
+export * from './blockchain-network-config-details.interface';
+export * from './blockchain-network-config.interface';
