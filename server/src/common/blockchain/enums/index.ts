@@ -1,2 +1,3 @@
-export { BlockchainNetworks } from './networks.enum';
-export { BlockchainNetworkType } from './network-type.enum';
+export { BlockchainNetworkName } from './network-name.enum';
+export { BlockchainNetworkPrototypeLevel } from './network-prototype-level.enum';
+export { BlockchainNetworkFamily } from './network-family.enum';

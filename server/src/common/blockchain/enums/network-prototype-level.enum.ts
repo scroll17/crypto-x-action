@@ -1,4 +1,4 @@
-export enum BlockchainNetworkType {
+export enum BlockchainNetworkPrototypeLevel {
   MainNet = 'mainnet',
   TestNet = 'testnet',
 }
