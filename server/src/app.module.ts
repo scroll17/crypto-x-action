@@ -12,8 +12,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import cors from 'cors';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { configuration } from './config/configuration';
-import { usersConfiguration } from './config/users-configuration';
+import { configurationLoaders } from './config';
 import { TelegramModule } from './modules/telegram/telegram.module';
 import { SeedsModule } from './modules/dbl/seeds/seeds.module';
 import { RedisModule } from './modules/redis/redis.module';
@@ -38,7 +37,7 @@ import { StarknetNetworkModule } from './modules/networks/starknet/starknet.modu
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [configuration, usersConfiguration],
+      load: configurationLoaders,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
