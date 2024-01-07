@@ -4,7 +4,7 @@ import { BadRequestException } from '@nestjs/common';
 import { IsEnum, IsOptional, MinLength } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { BlockchainNetworks } from '@common/blockchain/enums';
+import { BlockchainNetworkName } from '@common/blockchain/enums';
 
 export class BlockchainNetworkFilterDto {
   @IsOptional()
@@ -24,12 +24,12 @@ export class BlockchainNetworkFilterDto {
   readonly id?: Types.ObjectId;
 
   @IsOptional()
-  @IsEnum(BlockchainNetworks)
+  @IsEnum(BlockchainNetworkName)
   @MinLength(1)
   @ApiProperty({
-    enum: Object.values(BlockchainNetworks),
-    example: BlockchainNetworks.Ethereum,
+    enum: Object.values(BlockchainNetworkName),
+    example: BlockchainNetworkName.Ethereum,
     description: 'The Blockchain network',
   })
-  readonly name?: BlockchainNetworks;
+  readonly name?: BlockchainNetworkName;
 }

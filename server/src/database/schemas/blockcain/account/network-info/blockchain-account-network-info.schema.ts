@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BlockchainNetworkType } from '@common/blockchain';
+import { BlockchainNetworkPrototypeLevel } from '@common/blockchain/enums';
 
 @Schema({
   _id: false,
@@ -9,7 +9,7 @@ export class BlockchainAccountNetworkInfo {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, required: true, enum: Object.values(BlockchainNetworkType), unique: true })
+  @Prop({ type: String, required: true, enum: Object.values(BlockchainNetworkPrototypeLevel), unique: true })
   type: string;
 
   @Prop({ type: String, required: true })

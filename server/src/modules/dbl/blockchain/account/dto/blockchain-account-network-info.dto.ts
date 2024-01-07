@@ -1,7 +1,7 @@
 /*external modules*/
 import { IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { BlockchainNetworkType } from '@common/blockchain';
+import { BlockchainNetworkPrototypeLevel } from '@common/blockchain/enums';
 
 export class BlockchainAccountNetworkInfoDto {
   @IsString()
@@ -13,14 +13,14 @@ export class BlockchainAccountNetworkInfoDto {
   })
   readonly name: string;
 
-  @IsEnum(BlockchainNetworkType)
+  @IsEnum(BlockchainNetworkPrototypeLevel)
   @IsNotEmpty()
   @ApiProperty({
-    enum: Object.values(BlockchainNetworkType),
-    example: BlockchainNetworkType.MainNet,
+    enum: Object.values(BlockchainNetworkPrototypeLevel),
+    example: BlockchainNetworkPrototypeLevel.MainNet,
     description: 'This describes the type of Blockchain network',
   })
-  readonly type: BlockchainNetworkType;
+  readonly type: BlockchainNetworkPrototypeLevel;
 
   @IsString()
   @MinLength(8)

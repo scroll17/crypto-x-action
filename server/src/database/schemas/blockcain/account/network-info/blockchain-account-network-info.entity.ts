@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BlockchainAccountNetworkInfo } from './blockchain-account-network-info.schema';
-import { BlockchainNetworkType } from '@common/blockchain';
+import { BlockchainNetworkPrototypeLevel } from '@common/blockchain/enums';
 
 export class BlockchainAccountNetworkInfoEntity implements BlockchainAccountNetworkInfo {
   @ApiProperty({
@@ -10,11 +10,11 @@ export class BlockchainAccountNetworkInfoEntity implements BlockchainAccountNetw
   name: string;
 
   @ApiProperty({
-    enum: Object.values(BlockchainNetworkType),
-    example: BlockchainNetworkType.MainNet,
+    enum: Object.values(BlockchainNetworkPrototypeLevel),
+    example: BlockchainNetworkPrototypeLevel.MainNet,
     description: 'This describes the type of Blockchain network',
   })
-  type: BlockchainNetworkType;
+  type: BlockchainNetworkPrototypeLevel;
 
   @ApiProperty({
     type: String,

@@ -48,4 +48,5 @@ export class CreateBlockchainAccountDto {
     type: BlockchainAccountNetworkInfoDto,
   })
   readonly networkInfo: BlockchainAccountNetworkInfoDto;
+  // TODO: remove it
 }

@@ -1,4 +1,4 @@
-import { BlockchainNetworkFamily } from '@common/blockchain';
+import { BlockchainNetworkFamily } from '@common/blockchain/enums';
 import { IBlockchainNetworkEnvConfigDetails } from './blockchain-network-config-details.interface';
 import { IEvmBlockchainNetworkEnvConfigConnect } from '@common/blockchain/types/env-config/network/evm';
 

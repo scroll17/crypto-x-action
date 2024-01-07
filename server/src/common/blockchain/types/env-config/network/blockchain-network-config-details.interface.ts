@@ -1,4 +1,4 @@
-import { BlockchainNetworkName, BlockchainNetworkPrototypeLevel } from '@common/blockchain';
+import { BlockchainNetworkName, BlockchainNetworkPrototypeLevel } from '@common/blockchain/enums';
 
 export interface IBlockchainNetworkEnvConfigDetails {
   name: BlockchainNetworkName; // Ethereum, ZkSync, ...
