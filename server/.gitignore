@@ -7,8 +7,8 @@
 
 # Env
 .env
-.users.json
-.blockchain-networks.json
+/env/.blockchain-networks.json
+/env/.users.json
 
 # Logs
 logs
