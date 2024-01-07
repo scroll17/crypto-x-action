@@ -10,13 +10,13 @@ export class BlockchainNetworkConnectEntity implements BlockchainNetworkConnect 
   url: string;
 
   @ApiProperty({
-    type: Object,
+    type: String,
     example: {
       keepAlive: true,
       withCredentials: false,
       timeout: 20_000, // ms
     },
-    description: 'The connect options to network node client instance',
+    description: 'The connect options to network node client instance in JSON format',
   })
-  connectOptions: Record<string, unknown>;
+  connectOptions: string;
 }

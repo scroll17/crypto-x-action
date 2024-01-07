@@ -17,6 +17,13 @@ export class BlockchainNetworkEntity implements BlockchainNetwork {
   _id: Types.ObjectId;
 
   @ApiProperty({
+    type: String,
+    example: 'ethereum-goerli',
+    description: 'The unique inner key for Blockchain network',
+  })
+  innerKey: string;
+
+  @ApiProperty({
     enum: Object.values(BlockchainNetworkFamily),
     example: BlockchainNetworkFamily.EVM,
     description: 'The Blockchain network Family',
@@ -79,14 +86,7 @@ export class BlockchainNetworkEntity implements BlockchainNetwork {
     description:
       'The Socket (adds additional functionality) connect options to client instance of network Node',
   })
-  socketConnect: BlockchainNetworkConnectEntity;
-
-  @ApiProperty({
-    type: String,
-    example: 'ethereum-goerli',
-    description: 'The unique inner key for Blockchain network',
-  })
-  innerKey: string;
+  socketConnect: BlockchainNetworkConnectEntity | null;
 
   @ApiProperty({
     type: String,

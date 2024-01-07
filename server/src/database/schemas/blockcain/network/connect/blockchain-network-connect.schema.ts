@@ -9,8 +9,8 @@ export class BlockchainNetworkConnect {
   @Prop({ type: String, required: true })
   url: string;
 
-  @Prop({ type: SchemaTypes.Subdocument, required: true })
-  connectOptions: Record<string, unknown>;
+  @Prop({ type: String, required: true, default: '{}' })
+  connectOptions: string;
 }
 
 export const BlockchainNetworkConnectSchema = SchemaFactory.createForClass(BlockchainNetworkConnect);

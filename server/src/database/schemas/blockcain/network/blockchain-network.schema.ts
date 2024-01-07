@@ -10,7 +10,10 @@ import {
 import { PaginateResultEntity } from '@common/entities';
 import { FindBlockchainNetworkDto } from '../../../../modules/dbl/blockchain/network/dto';
 import { BlockchainNetworkEntity } from './blockchain-network.entity';
-import { BlockchainNetworkConnect } from '@schemas/blockcain/network/connect/blockchain-network-connect.schema';
+import {
+  BlockchainNetworkConnect,
+  BlockchainNetworkConnectSchema,
+} from '@schemas/blockcain/network/connect/blockchain-network-connect.schema';
 
 export type BlockchainNetworkDocument = HydratedDocument<BlockchainNetwork> & TStaticMethods;
 export type BlockchainNetworkModel = Model<BlockchainNetworkDocument> & TStaticMethods;
@@ -19,6 +22,9 @@ export const BLOCKCHAIN_NETWORK_COLLECTION_NAME = 'blockchainNetworks';
 
 @Schema({ timestamps: true, collection: BLOCKCHAIN_NETWORK_COLLECTION_NAME })
 export class BlockchainNetwork {
+  @Prop({ type: String, required: true, unique: true })
+  innerKey: string;
+
   @Prop({
     type: String,
     required: true,
@@ -52,14 +58,11 @@ export class BlockchainNetwork {
   @Prop({ type: String, required: false, default: null })
   scan: string | null;
 
-  @Prop({ type: BlockchainNetworkConnect, required: true })
+  @Prop({ type: BlockchainNetworkConnectSchema, required: true })
   httpConnect: BlockchainNetworkConnect;
 
-  @Prop({ type: BlockchainNetworkConnect, required: false })
-  socketConnect?: BlockchainNetworkConnect;
-
-  @Prop({ type: String, required: true, unique: true })
-  innerKey: string;
+  @Prop({ type: BlockchainNetworkConnectSchema, required: false, default: null })
+  socketConnect: BlockchainNetworkConnect | null;
 
   @Prop({ type: String, required: true })
   description: string;

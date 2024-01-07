@@ -4,7 +4,7 @@ import { IBlockchainNetworkEnvConfig } from '@common/blockchain/types/env-config
 import { AppConstants } from '../../app.constants';
 
 export const blockchainNetworksConfiguration = (): {
-  blockchainNetworks: Array<IBlockchainNetworkEnvConfig>;
+  blockchainNetworks: Record<string, IBlockchainNetworkEnvConfig>;
 } => {
   const networksFilePath = path.resolve(__dirname, '../../../', AppConstants.Env.BlockchainNetworksFileName);
   fs.accessSync(networksFilePath, fs.constants.R_OK | fs.constants.W_OK);
