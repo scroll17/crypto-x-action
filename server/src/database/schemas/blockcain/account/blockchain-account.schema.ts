@@ -10,10 +10,6 @@ import { PRIVATE_COLLECTION_NAME, PrivateDocument } from '@schemas/private';
 import { PaginateResultEntity } from '@common/entities';
 import { BlockchainAccountEntity } from '@schemas/blockcain/account/blockchain-account.entity';
 import {
-  BlockchainAccountNetworkInfoSchema,
-  BlockchainAccountNetworkInfo,
-} from './network-info/blockchain-account-network-info.schema';
-import {
   EditBlockchainAccountDto,
   FindBlockchainAccountDto,
 } from '../../../../modules/dbl/blockchain/account/dto';
@@ -37,9 +33,6 @@ export class BlockchainAccount {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: BLOCKCHAIN_NETWORK_COLLECTION_NAME, required: true })
   network: BlockchainNetworkDocument;
-
-  @Prop({ type: BlockchainAccountNetworkInfoSchema, required: true })
-  networkInfo: BlockchainAccountNetworkInfo;
 
   @Prop({ type: [SchemaTypes.ObjectId], ref: COMMENT_COLLECTION_NAME, required: true, default: [] })
   comments: CommentDocument[];
@@ -245,10 +238,6 @@ BlockchainAccountSchema.statics.updateAccount = async function (
 
   if ('address' in data && data.address) {
     updateData.address = data.address;
-  }
-
-  if ('networkInfo' in data && data.networkInfo) {
-    updateData.networkInfo = data.networkInfo;
   }
 
   if ('comments' in data && data.comments) {

@@ -4,7 +4,6 @@ import { BlockchainAccount } from './blockchain-account.schema';
 import { UserEntity } from '@schemas/user';
 import { CommentEntity } from '@schemas/comment';
 import { BlockchainNetworkEntity } from '@schemas/blockcain/network';
-import { BlockchainAccountNetworkInfoEntity } from './network-info/blockchain-account-network-info.entity';
 
 export class BlockchainAccountEntity implements BlockchainAccount {
   @ApiProperty({
@@ -41,12 +40,6 @@ export class BlockchainAccountEntity implements BlockchainAccount {
   })
   // @ts-ignore
   network: BlockchainNetworkEntity;
-
-  @ApiProperty({
-    type: BlockchainAccountNetworkInfoEntity,
-    description: 'The object with detailed information about network',
-  })
-  networkInfo: BlockchainAccountNetworkInfoEntity;
 
   @ApiProperty({
     type: [CommentEntity],
