@@ -5,13 +5,13 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DevEndpointHelper {
-  private readonly isDevEnv: boolean;
+  private readonly isDevEndpointsEnabled: boolean;
 
   constructor(
     private readonly reflector: Reflector,
     private readonly configService: ConfigService,
   ) {
-    this.isDevEnv = this.configService.getOrThrow<boolean>('isDev');
+    this.isDevEndpointsEnabled = this.configService.getOrThrow<boolean>('security.devEndpointsEnabled');
   }
 
   public check(context: ExecutionContext) {
@@ -19,6 +19,6 @@ export class DevEndpointHelper {
       this.reflector.get<boolean>(DecoratorKeys.IsDevEndpoint, context.getHandler()) ??
       this.reflector.get<boolean>(DecoratorKeys.IsDevEndpoint, context.getClass());
 
-    return isDev && this.isDevEnv;
+    return isDev && this.isDevEndpointsEnabled;
   }
 }
