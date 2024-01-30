@@ -5,4 +5,5 @@ export { TimeoutLimit } from './timeout-limit.decorator';
 export { DisableEndpoint } from './disable-endpoint.decorator';
 export { DisableController } from './disable-controller.decorator';
 export { RequesterIp } from './requester-ip.decorator';
+export { IsDevEndpoint } from './is-dev-endpoint.decorator';
 export { DevEndpoint } from './dev-endpoint.decorator';

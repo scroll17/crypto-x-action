@@ -1,4 +1,4 @@
 import { SetMetadata } from '@nestjs/common';
 import { DecoratorKeys } from '@common/enums';
 
-export const DevEndpoint = () => SetMetadata(DecoratorKeys.IsDevEndpoint, true);
+export const IsDevEndpoint = () => SetMetadata(DecoratorKeys.IsDevEndpoint, true);
