@@ -23,14 +23,15 @@ import { DevEndpointHelper, IpHelper } from '@common/helpers';
 import { AppGetaway } from './app.getaway';
 import { LoggingInterceptor } from '@common/interceptors';
 import { ProtectionModule } from './modules/protection/protection.module';
-import { DebankModule } from './modules/integrations/debank/debank.module';
 import { UserModule } from './modules/dbl/user/user.module';
 import { ProtectionMiddleware } from '@common/middlewares';
 import { CommentModule } from './modules/dbl/comment/comment.module';
+import { IntegrationModule } from './modules/dbl/integration/integration.module';
 import { BlockchainAccountModule } from './modules/dbl/blockchain/account/account.module';
 import { BlockchainNetworkModule } from './modules/dbl/blockchain/network/network.module';
 import { EthereumNetworkModule } from './modules/networks/ethereum/ethereum.module';
 import { StarknetNetworkModule } from './modules/networks/starknet/starknet.module';
+import { INTEGRATION_MODULES } from './modules/integrations/projects';
 
 @Module({
   imports: [
@@ -71,10 +72,13 @@ import { StarknetNetworkModule } from './modules/networks/starknet/starknet.modu
     NgrokModule,
     JobModule,
     ProtectionModule,
+    // INTEGRATIONS
+    ...INTEGRATION_MODULES,
     // DBL
     SeedsModule,
     UserModule,
     CommentModule,
+    IntegrationModule,
     BlockchainAccountModule,
     BlockchainNetworkModule,
     // Network
@@ -83,7 +87,6 @@ import { StarknetNetworkModule } from './modules/networks/starknet/starknet.modu
     // Other
     TelegramModule,
     AdminModule,
-    DebankModule,
   ],
   controllers: [],
   providers: [
