@@ -3,7 +3,7 @@ import { AppConstants } from '../../app.constants';
 import { TIntegrationSeed } from '@common/types/integrations';
 
 export const integrationsConfiguration = (): {
-  integrationsSeed: Array<TIntegrationSeed>;
+  integrations: Array<TIntegrationSeed>;
 } => {
   const integrationsFilePath = AppConstants.Env.IntegrationsFilePath;
   fs.accessSync(integrationsFilePath, fs.constants.R_OK | fs.constants.W_OK);
@@ -14,5 +14,5 @@ export const integrationsConfiguration = (): {
     }),
   );
 
-  return { integrationsSeed: integrations };
+  return { integrations: integrations };
 };

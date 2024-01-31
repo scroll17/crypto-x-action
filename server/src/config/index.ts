@@ -1,7 +1,12 @@
 import { configuration } from './configuration';
-import { usersConfiguration, blockchainNetworksConfiguration } from './json-based';
+import { usersConfiguration, blockchainNetworksConfiguration, integrationsConfiguration } from './json-based';
 
-const configurationLoaders = [configuration, usersConfiguration, blockchainNetworksConfiguration];
+const configurationLoaders = [
+  configuration,
+  usersConfiguration,
+  blockchainNetworksConfiguration,
+  integrationsConfiguration,
+];
 
 export { configurationLoaders };
 export { init } from './configuration';
