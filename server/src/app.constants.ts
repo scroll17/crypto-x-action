@@ -1,4 +1,5 @@
 import * as path from 'node:path';
+import { IntegrationNames } from '@common/integrations/common';
 
 export namespace AppConstants {
   export namespace Env {
@@ -9,5 +10,8 @@ export namespace AppConstants {
 
     export const BlockchainNetworksFileName = '.blockchain-networks.json';
     export const BlockchainNetworksFilePath = path.resolve(EnvFolderPath, BlockchainNetworksFileName);
+
+    export const IntegrationsFileName = '.integrations.json';
+    export const IntegrationsFilePath = path.resolve(EnvFolderPath, IntegrationsFileName);
   }
 }

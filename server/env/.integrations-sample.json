@@ -1,0 +1,9 @@
+[
+  {
+    "key": "crypto-compare",
+    "name": "CryptoCompare",
+    "apiUrl": "https://min-api.cryptocompare.com",
+    "description": "The service which provide Symbols price",
+    "active": true
+  }
+]
