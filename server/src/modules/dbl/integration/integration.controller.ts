@@ -1,13 +1,5 @@
 import { Types } from 'mongoose';
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -18,16 +10,29 @@ import {
 } from '@nestjs/swagger';
 import { IntegrationService } from './integration.service';
 import { AuthUser } from '@common/decorators';
-import { UserPaginateResultEntity } from '../user/entities/user-paginate-result.entity';
 import { ParseObjectIdPipe } from '@common/pipes';
-import { CommentEntity } from '@schemas/comment';
-import { DirectlyEditCommentDto, FindCommentDto } from './dto';
-import {IntegrationEntity} from "@schemas/integration";
+import { IntegrationEntity } from '@schemas/integration';
+import { FindIntegrationDto } from './dto';
+import { IntegrationPaginateResultEntity } from './entities';
 
 @Controller('integration')
 @ApiTags('Integration')
 export class IntegrationController {
   constructor(private readonly integrationService: IntegrationService) {}
+
+  @Post('/all')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Get all integrations.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Paginate of integrations result.',
+    type: IntegrationPaginateResultEntity,
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAll(@Body() dto: FindIntegrationDto) {
+    return this.integrationService.getAll(dto);
+  }
 
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
