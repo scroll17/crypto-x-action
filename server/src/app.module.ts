@@ -31,7 +31,7 @@ import { BlockchainAccountModule } from './modules/dbl/blockchain/account/accoun
 import { BlockchainNetworkModule } from './modules/dbl/blockchain/network/network.module';
 import { EthereumNetworkModule } from './modules/networks/ethereum/ethereum.module';
 import { StarknetNetworkModule } from './modules/networks/starknet/starknet.module';
-import { INTEGRATION_MODULES } from './modules/integrations/projects';
+import { INTEGRATION_MODULES } from './modules/integrations';
 
 @Module({
   imports: [
