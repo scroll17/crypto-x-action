@@ -24,4 +24,18 @@ export class CommentEntity implements Comment {
   })
   // @ts-ignore
   createdBy: UserEntity;
+
+  @ApiProperty({
+    type: Date,
+    format: 'date-time',
+    example: '2023-03-22T17:32:28Z',
+  })
+  createdAt: Date;
+
+  @ApiProperty({
+    type: Date,
+    format: 'date-time',
+    example: '2023-04-22T17:32:28Z',
+  })
+  updatedAt: Date;
 }
