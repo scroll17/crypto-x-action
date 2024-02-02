@@ -91,6 +91,12 @@ CommentSchema.statics.paginate = async function (findOptions): Promise<PaginateR
   const total = await this.count(where);
   const data = (await this.aggregate()
     .match(where)
+    .lookup({
+      from: USER_COLLECTION_NAME,
+      localField: 'createdBy',
+      foreignField: '_id',
+      as: 'createdBy',
+    })
     .skip(skip)
     .limit(count)
     .sort(sort ? { [sort.name]: sort.type } : { _id: 'desc' })
