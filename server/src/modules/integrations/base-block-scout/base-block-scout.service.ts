@@ -1,8 +1,10 @@
+import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
-import { InjectModel } from '@nestjs/mongoose';
+import { BaseBlockScoutApiRoutes, TBaseBlockScoutStatsResponse } from '@common/integrations/base-block-scout';
 
 @Injectable()
 export class BaseBlockScoutService implements OnModuleInit {
@@ -42,12 +44,36 @@ export class BaseBlockScoutService implements OnModuleInit {
     }
   }
 
-  private async initConnection() {}
+  private async initConnection() {
+    // const stats = await this.getStats();
+    // console.log('stats => ', stats)
+  }
 
   // TOOLS
   private checkActiveStatus() {
     if (!this.integration.active) {
       throw new HttpException(`Integration "${this.INTEGRATION_KEY}" is not active`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // API
+  public async getStats() {
+    this.checkActiveStatus();
+    const route = BaseBlockScoutApiRoutes.Stats;
+
+    const url = `${this.apiUrl}${route}`;
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(this.httpService.get<TBaseBlockScoutStatsResponse>(url));
+      // this.handleErrorResponse(route, data);
+
+      return data;
+    } catch (error) {
+      this.logger.error(`Request to "${route}" error: `, error);
+      throw error;
     }
   }
 }
