@@ -1,5 +1,4 @@
 import * as path from 'node:path';
-import { IntegrationNames } from '@common/integrations/common';
 
 export namespace AppConstants {
   export namespace Env {

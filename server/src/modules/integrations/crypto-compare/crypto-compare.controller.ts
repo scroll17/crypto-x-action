@@ -24,8 +24,8 @@ export class CryptoCompareController {
   async getPrice(
     @Query('fromSymbol') fromSymbol: string,
     @Query('toSymbols', ParseArrayPipe) toSymbols: string[],
-    @Query('cache', ParseBoolPipe) cache: boolean,
+    // @Query('cache', ParseBoolPipe) cache: boolean,
   ) {
-    return this.cryptoCompareService.getPrices(fromSymbol, toSymbols, cache);
+    return this.cryptoCompareService.getPrices(fromSymbol, toSymbols);
   }
 }

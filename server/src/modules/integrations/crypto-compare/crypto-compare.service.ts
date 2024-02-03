@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
 import { InjectModel } from '@nestjs/mongoose';
+import { CryptoCompareApiRoutes } from '@common/integrations/crypto-compare';
 
 @Injectable()
 export class CryptoCompareService implements OnModuleInit {
@@ -39,7 +40,7 @@ export class CryptoCompareService implements OnModuleInit {
     });
 
     // await this.getPrices('ETH', ['USD', 'EUR']);
-    // await this.getPrices('ETH', ['BTC']);
+    // await this.getPrices('ETH', ['BTCDDD']);
   }
 
   private checkActiveStatus() {
@@ -48,15 +49,34 @@ export class CryptoCompareService implements OnModuleInit {
     }
   }
 
-  private isErrorResponse(data: Record<string, unknown>) {
-    //     Response: 'Error',
-    //     Message: 'Path does not exist',
+  private handleErrorResponse(route: string, data: Record<string, unknown>) {
+    /**
+     *  {
+     *   "Response": "Error",
+     *   "Message": "cccagg_or_exchange market does not exist for this coin pair (ETH-BTCDDD)",
+     *   "HasWarning": false,
+     *   "Type": 2,
+     *   "RateLimit": {},
+     *   "Data": {},
+     *   "Cooldown": 0
+     * }
+     * */
+
+    if ('Response' in data && data.Response === 'Error') {
+      const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}"`;
+
+      this.logger.error(message, { ...data });
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
+    }
+
+    return;
   }
 
   private getCachedPrice(fromSymbol: string, toSymbols: string[]) {}
 
-  public async getPrices(fromSymbol: string, toSymbols: string[], cache = true) {
+  public async getPrices(fromSymbol: string, toSymbols: string[]) {
     this.checkActiveStatus();
+    const route = CryptoCompareApiRoutes.Price;
 
     if (toSymbols.length === 0) {
       throw new HttpException('Passed invalid "toSymbols"', HttpStatus.BAD_REQUEST);
@@ -65,10 +85,11 @@ export class CryptoCompareService implements OnModuleInit {
     const query = new URLSearchParams(toSymbols.map((s) => ['tsyms', s]));
     query.append('fsym', fromSymbol);
 
-    const url = `${this.apiUrl}/data/price?${query.toString()}`;
+    const url = `${this.apiUrl}${route}?${query.toString()}`;
 
     try {
       const { data } = await firstValueFrom(this.httpService.get<Record<string, number>>(url));
+      this.handleErrorResponse(route, data);
 
       const prevCache = this.cachedPrice.get(fromSymbol) ?? {};
       this.cachedPrice.set(fromSymbol, { ...prevCache, ...data });
