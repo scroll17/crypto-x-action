@@ -72,7 +72,14 @@ export class CryptoCompareService implements OnModuleInit {
     return;
   }
 
-  private getCachedPrice(fromSymbol: string, toSymbols: string[]) {}
+  private getCachedPrice(fromSymbol: string, toSymbol: string) {
+    const cache = this.cachedPrice.get(fromSymbol);
+    if (cache) {
+      return cache[toSymbol] ?? null;
+    }
+
+    return null;
+  }
 
   public async getPrices(fromSymbol: string, toSymbols: string[]) {
     this.checkActiveStatus();
@@ -88,11 +95,18 @@ export class CryptoCompareService implements OnModuleInit {
     const url = `${this.apiUrl}${route}?${query.toString()}`;
 
     try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+        query: query.toString(),
+      });
+
       const { data } = await firstValueFrom(this.httpService.get<Record<string, number>>(url));
       this.handleErrorResponse(route, data);
 
       const prevCache = this.cachedPrice.get(fromSymbol) ?? {};
-      this.cachedPrice.set(fromSymbol, { ...prevCache, ...data });
+      const newCache = Object.entries({ ...prevCache, ...data }).filter(([, value]) => Boolean(value));
+
+      this.cachedPrice.set(fromSymbol, Object.fromEntries(newCache));
 
       return data;
     } catch (error) {
@@ -101,7 +115,24 @@ export class CryptoCompareService implements OnModuleInit {
     }
   }
 
-  public async getPrice(fromSymbol: string, toSymbol: string, cache = true) {}
+  public async getPrice(fromSymbol: string, toSymbol: string, useCache = true): Promise<number | null> {
+    if (useCache) {
+      const cache = this.getCachedPrice(fromSymbol, toSymbol);
+      if (cache) {
+        this.logger.debug(`Selected value from cache: "${fromSymbol}" -> "${toSymbol}"`, {
+          cache,
+          fromS: fromSymbol,
+          toS: toSymbol,
+        });
+
+        return cache;
+      }
+    }
+
+    const prices = await this.getPrices(fromSymbol, [toSymbol]);
+
+    return prices[toSymbol] ?? null;
+  }
 
   public getRateLimit() {}
 }
