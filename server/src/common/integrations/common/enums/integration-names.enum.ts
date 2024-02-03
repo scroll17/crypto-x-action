@@ -1,4 +1,4 @@
 export enum IntegrationNames {
-  DeBank = 'DeBank',
   CryptoCompare = 'crypto-compare',
+  BaseBlockScout = 'base-block-scout',
 }

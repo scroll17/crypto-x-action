@@ -5,5 +5,12 @@
     "apiUrl": "https://min-api.cryptocompare.com",
     "description": "The service which provide Symbols price",
     "active": true
+  },
+  {
+    "key": "base-block-scout",
+    "name": "BaseBlockScout",
+    "apiUrl": "https://base.blockscout.com/api/v2",
+    "description": "The service which provide Base Mainnet explorer",
+    "active": true
   }
 ]
