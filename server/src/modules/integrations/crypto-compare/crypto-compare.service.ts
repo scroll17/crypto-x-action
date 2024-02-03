@@ -4,7 +4,12 @@ import { firstValueFrom } from 'rxjs';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
 import { InjectModel } from '@nestjs/mongoose';
-import { CryptoCompareApiRoutes } from '@common/integrations/crypto-compare';
+import {
+  CryptoCompareApiRoutes,
+  ICryptoGetawayGenericResponse,
+  TCryptoGetawayDataResponse,
+  TCryptoGetawayRateLimitResponse,
+} from '@common/integrations/crypto-compare';
 
 @Injectable()
 export class CryptoCompareService implements OnModuleInit {
@@ -52,7 +57,7 @@ export class CryptoCompareService implements OnModuleInit {
     const result = await this.getRateLimit();
 
     this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
-      rateLimit: result.Data,
+      rateLimit: result,
     });
   }
 
@@ -63,7 +68,10 @@ export class CryptoCompareService implements OnModuleInit {
     }
   }
 
-  private handleErrorResponse(route: string, data: Record<string, unknown>) {
+  private handleErrorResponse(
+    route: string,
+    data: ICryptoGetawayGenericResponse<unknown> | Record<string, unknown>,
+  ) {
     /**
      *  {
      *   "Response": "Error",
@@ -114,8 +122,12 @@ export class CryptoCompareService implements OnModuleInit {
         query: query.toString(),
       });
 
-      const { data } = await firstValueFrom(this.httpService.get<Record<string, number>>(url));
-      this.handleErrorResponse(route, data);
+      const { data: rawData } = await firstValueFrom(
+        this.httpService.get<ICryptoGetawayGenericResponse<unknown> | TCryptoGetawayDataResponse>(url),
+      );
+      this.handleErrorResponse(route, rawData);
+
+      const data = rawData as TCryptoGetawayDataResponse;
 
       const prevCache = this.cachedPrice.get(fromSymbol) ?? {};
       const newCache = Object.entries({ ...prevCache, ...data }).filter(([, value]) => Boolean(value));
@@ -158,10 +170,10 @@ export class CryptoCompareService implements OnModuleInit {
         endpoint: route,
       });
 
-      const { data } = await firstValueFrom(this.httpService.get<Record<string, number>>(url));
+      const { data } = await firstValueFrom(this.httpService.get<TCryptoGetawayRateLimitResponse>(url));
       this.handleErrorResponse(route, data);
 
-      return data;
+      return data.Data;
     } catch (error) {
       this.logger.error(`Request to "${route}" error: `, error);
       throw error;
