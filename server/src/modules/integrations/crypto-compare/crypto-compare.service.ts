@@ -14,6 +14,7 @@ export class CryptoCompareService implements OnModuleInit {
 
   private apiUrl: string;
   private integration: IntegrationDocument;
+
   private readonly cachedPrice: Map<string, Record<string, number>> = new Map();
 
   constructor(
@@ -39,10 +40,10 @@ export class CryptoCompareService implements OnModuleInit {
       apiUrl: integration.apiUrl,
     });
 
-    // await this.getPrices('ETH', ['USD', 'EUR']);
-    // await this.getPrices('ETH', ['BTCDDD']);
+    // TODO: init logic
   }
 
+  // TOOLS
   private checkActiveStatus() {
     if (!this.integration.active) {
       throw new HttpException(`Integration "${this.INTEGRATION_KEY}" is not active`, HttpStatus.BAD_REQUEST);
@@ -81,6 +82,7 @@ export class CryptoCompareService implements OnModuleInit {
     return null;
   }
 
+  // API
   public async getPrices(fromSymbol: string, toSymbols: string[]) {
     this.checkActiveStatus();
     const route = CryptoCompareApiRoutes.Price;
@@ -93,7 +95,6 @@ export class CryptoCompareService implements OnModuleInit {
     query.append('fsym', fromSymbol);
 
     const url = `${this.apiUrl}${route}?${query.toString()}`;
-
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
         endpoint: route,
@@ -110,7 +111,7 @@ export class CryptoCompareService implements OnModuleInit {
 
       return data;
     } catch (error) {
-      this.logger.error('Price request error: ', error);
+      this.logger.error(`Request to "${route}" error: `, error);
       throw error;
     }
   }
@@ -134,5 +135,23 @@ export class CryptoCompareService implements OnModuleInit {
     return prices[toSymbol] ?? null;
   }
 
-  public getRateLimit() {}
+  public async getRateLimit() {
+    this.checkActiveStatus();
+    const route = CryptoCompareApiRoutes.RateLimit;
+
+    const url = `${this.apiUrl}${route}`;
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(this.httpService.get<Record<string, number>>(url));
+      this.handleErrorResponse(route, data);
+
+      return data;
+    } catch (error) {
+      this.logger.error(`Request to "${route}" error: `, error);
+      throw error;
+    }
+  }
 }

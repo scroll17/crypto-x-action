@@ -1,11 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, ParseArrayPipe, ParseBoolPipe, Query } from '@nestjs/common';
-import {
-  ApiForbiddenResponse,
-  ApiOperation,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiForbiddenResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CryptoCompareService } from './crypto-compare.service';
 import { DevEndpoint } from '@common/decorators';
 import { IntegrationNames } from '@common/integrations/common';
@@ -56,5 +50,21 @@ export class CryptoCompareController {
     @Query('useCache', ParseBoolPipe) useCache: boolean,
   ) {
     return this.cryptoCompareService.getPrice(fromSymbol, toSymbol, useCache);
+  }
+
+  @Get('/rate-limit')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Rate limit info.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Rate limit info.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getRateLimit() {
+    return this.cryptoCompareService.getRateLimit();
   }
 }
