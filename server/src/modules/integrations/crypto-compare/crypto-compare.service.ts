@@ -23,7 +23,7 @@ export class CryptoCompareService implements OnModuleInit {
   ) {}
 
   public async onModuleInit() {
-    this.logger.verbose(`Load integration record by key: "${this.INTEGRATION_KEY}"`, {
+    this.logger.debug(`Load integration record by key: "${this.INTEGRATION_KEY}"`, {
       key: this.INTEGRATION_KEY,
     });
 
@@ -34,13 +34,26 @@ export class CryptoCompareService implements OnModuleInit {
 
     this.apiUrl = integration.apiUrl;
     this.integration = integration;
-    this.logger.debug(`Integration "${this.INTEGRATION_KEY}" loaded:`, {
+
+    this.logger.verbose(`Integration "${this.INTEGRATION_KEY}" loaded:`, {
       key: integration.key,
       active: integration.active,
       apiUrl: integration.apiUrl,
     });
 
-    // TODO: init logic
+    if (this.integration.active) {
+      await this.initConnection();
+    }
+  }
+
+  private async initConnection() {
+    this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
+
+    const result = await this.getRateLimit();
+
+    this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
+      rateLimit: result.Data,
+    });
   }
 
   // TOOLS
