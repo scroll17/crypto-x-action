@@ -40,7 +40,8 @@ export class BaseBlockScoutService implements OnModuleInit {
     });
 
     if (this.integration.active) {
-      await this.initConnection();
+      // await this.initConnection();
+      // TODO
     }
   }
 
