@@ -1,5 +1,5 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { ApiForbiddenResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseBlockScoutService } from './base-block-scout.service';
 import { IntegrationNames } from '@common/integrations/common';
 import { DevEndpoint } from '@common/decorators';
@@ -23,5 +23,22 @@ export class BaseBlockScoutController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getStats() {
     return this.baseBlockScoutService.getStats();
+  }
+
+  @Get('/address/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address info in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Address info.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAddress(@Query('hash') hash: string) {
+    return this.baseBlockScoutService.getAddress(hash);
   }
 }

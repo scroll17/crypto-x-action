@@ -1,10 +1,16 @@
 import { firstValueFrom } from 'rxjs';
+import * as Web3Utils from 'web3-utils';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
-import { BaseBlockScoutApiRoutes, TBaseBlockScoutStatsResponse } from '@common/integrations/base-block-scout';
+import {
+  BaseBlockScoutApiRoutes,
+  IBaseBlockScoutWalletAddressData,
+  TBaseBlockScoutAddressResponse,
+  TBaseBlockScoutStatsResponse,
+} from '@common/integrations/base-block-scout';
 
 @Injectable()
 export class BaseBlockScoutService implements OnModuleInit {
@@ -43,6 +49,12 @@ export class BaseBlockScoutService implements OnModuleInit {
       // await this.initConnection();
       // TODO
     }
+
+    const hash = '0xcdad2088693213eaa880f2b221c3c8e881655f27DDDDD';
+    const address = await this.getAddress(hash);
+    console.log('address =>', address);
+    const balance = this.getAddressBalance(address, 'ether');
+    console.log('balance =>', balance);
   }
 
   private async initConnection() {
@@ -62,6 +74,13 @@ export class BaseBlockScoutService implements OnModuleInit {
     }
   }
 
+  public getAddressBalance(
+    address: Pick<IBaseBlockScoutWalletAddressData, 'coin_balance'>,
+    unit: Web3Utils.EtherUnits,
+  ) {
+    return Web3Utils.fromWei(address.coin_balance, unit);
+  }
+
   // API
   public async getStats() {
     this.checkActiveStatus();
@@ -74,11 +93,31 @@ export class BaseBlockScoutService implements OnModuleInit {
       });
 
       const { data } = await firstValueFrom(this.httpService.get<TBaseBlockScoutStatsResponse>(url));
-      // this.handleErrorResponse(route, data);
 
       return data;
     } catch (error) {
-      this.logger.error(`Request to "${route}" error: `, error);
+      this.logger.error(`Request to "${route}" error: `, { error });
+      throw error;
+    }
+  }
+
+  public async getAddress(addressHash: string) {
+    this.checkActiveStatus();
+    const route = BaseBlockScoutApiRoutes.Addresses;
+
+    const url = `${this.apiUrl}${route}/${addressHash}`;
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(this.httpService.get<TBaseBlockScoutAddressResponse>(url));
+
+      return data;
+    } catch (error) {
+      console.log('error =>', error);
+
+      this.logger.error(`Request to "${route}" error: `, { error });
       throw error;
     }
   }
