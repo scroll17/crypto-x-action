@@ -45,8 +45,13 @@ export class BaseBlockScoutService implements OnModuleInit {
   }
 
   private async initConnection() {
-    // const stats = await this.getStats();
-    // console.log('stats => ', stats)
+    this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
+
+    const result = await this.getStats();
+
+    this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
+      stats: result,
+    });
   }
 
   // TOOLS
