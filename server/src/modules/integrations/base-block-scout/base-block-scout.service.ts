@@ -1,5 +1,6 @@
-import { firstValueFrom } from 'rxjs';
 import * as Web3Utils from 'web3-utils';
+import { AxiosError } from 'axios';
+import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
@@ -50,11 +51,11 @@ export class BaseBlockScoutService implements OnModuleInit {
       // TODO
     }
 
-    const hash = '0xcdad2088693213eaa880f2b221c3c8e881655f27DDDDD';
-    const address = await this.getAddress(hash);
-    console.log('address =>', address);
-    const balance = this.getAddressBalance(address, 'ether');
-    console.log('balance =>', balance);
+    // const hash = '0xcdad2088693213eaa880f2b221c3c8e881655f27DDDDD';
+    // const address = await this.getAddress(hash);
+    // console.log('address =>', address);
+    // const balance = this.getAddressBalance(address, 'ether');
+    // console.log('balance =>', balance);
   }
 
   private async initConnection() {
@@ -72,6 +73,32 @@ export class BaseBlockScoutService implements OnModuleInit {
     if (!this.integration.active) {
       throw new HttpException(`Integration "${this.INTEGRATION_KEY}" is not active`, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private handleErrorResponse(route: string, error: Error | AxiosError) {
+    const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}"`;
+
+    if (error instanceof AxiosError) {
+      const { response } = error;
+
+      if (!response) {
+        this.logger.error(message, { error });
+        return error;
+      }
+
+      this.logger.error(message, {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+      });
+      return new HttpException(
+        message + ` ([status=${response.status}] [text=${response.statusText}])`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    this.logger.error(message, { error });
+    return error;
   }
 
   public getAddressBalance(
@@ -96,8 +123,7 @@ export class BaseBlockScoutService implements OnModuleInit {
 
       return data;
     } catch (error) {
-      this.logger.error(`Request to "${route}" error: `, { error });
-      throw error;
+      throw this.handleErrorResponse(route, error);
     }
   }
 
@@ -115,10 +141,7 @@ export class BaseBlockScoutService implements OnModuleInit {
 
       return data;
     } catch (error) {
-      console.log('error =>', error);
-
-      this.logger.error(`Request to "${route}" error: `, { error });
-      throw error;
+      throw this.handleErrorResponse(route, error);
     }
   }
 }
