@@ -41,4 +41,21 @@ export class BaseBlockScoutController {
   async getAddress(@Query('hash') hash: string) {
     return this.baseBlockScoutService.getAddress(hash);
   }
+
+  @Get('/token-balances/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address token balances info in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Array with token balances info by Address.',
+    schema: {
+      type: 'array',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getTokenBalances(@Query('hash') hash: string) {
+    return this.baseBlockScoutService.getTokenBalances(hash);
+  }
 }

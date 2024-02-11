@@ -11,6 +11,7 @@ import {
   IBaseBlockScoutWalletAddressData,
   TBaseBlockScoutAddressResponse,
   TBaseBlockScoutStatsResponse,
+  TBaseBlockScoutTokenBalancesResponse,
 } from '@common/integrations/base-block-scout';
 
 @Injectable()
@@ -50,12 +51,6 @@ export class BaseBlockScoutService implements OnModuleInit {
       // await this.initConnection();
       // TODO
     }
-
-    // const hash = '0xcdad2088693213eaa880f2b221c3c8e881655f27DDDDD';
-    // const address = await this.getAddress(hash);
-    // console.log('address =>', address);
-    // const balance = this.getAddressBalance(address, 'ether');
-    // console.log('balance =>', balance);
   }
 
   private async initConnection() {
@@ -138,6 +133,26 @@ export class BaseBlockScoutService implements OnModuleInit {
       });
 
       const { data } = await firstValueFrom(this.httpService.get<TBaseBlockScoutAddressResponse>(url));
+
+      return data;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getTokenBalances(addressHash: string) {
+    this.checkActiveStatus();
+    const route = `${BaseBlockScoutApiRoutes.Addresses}/${addressHash}/${BaseBlockScoutApiRoutes.TokenBalances}`;
+
+    const url = `${this.apiUrl}${route}`;
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TBaseBlockScoutTokenBalancesResponse[]>(url),
+      );
 
       return data;
     } catch (error) {
