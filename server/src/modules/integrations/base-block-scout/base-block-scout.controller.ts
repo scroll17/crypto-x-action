@@ -55,7 +55,24 @@ export class BaseBlockScoutController {
   })
   @ApiParam({ name: 'hash', type: String })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getTokenBalances(@Query('hash') hash: string) {
-    return this.baseBlockScoutService.getTokenBalances(hash);
+  async getAddressTokenBalances(@Query('hash') hash: string) {
+    return this.baseBlockScoutService.getAddressTokenBalances(hash);
+  }
+
+  @Get('/transactions/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address transactions info in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Array with transactions info by Address.',
+    schema: {
+      type: 'array',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAddressTransactions(@Query('hash') hash: string) {
+    return this.baseBlockScoutService.getAllAddressTransactions(hash);
   }
 }

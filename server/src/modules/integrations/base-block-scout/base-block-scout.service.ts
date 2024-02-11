@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as Web3Utils from 'web3-utils';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
@@ -8,10 +9,13 @@ import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
 import {
   BaseBlockScoutApiRoutes,
+  IBaseBlockScoutTransaction,
+  IBaseBlockScoutTransactionsPaginate,
   IBaseBlockScoutWalletAddressData,
   TBaseBlockScoutAddressResponse,
   TBaseBlockScoutStatsResponse,
   TBaseBlockScoutTokenBalancesResponse,
+  TBaseBlockScoutTransactionsResponse,
 } from '@common/integrations/base-block-scout';
 
 @Injectable()
@@ -96,6 +100,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     return error;
   }
 
+  // INTERNAL API
   public getAddressBalance(
     address: Pick<IBaseBlockScoutWalletAddressData, 'coin_balance'>,
     unit: Web3Utils.EtherUnits,
@@ -103,7 +108,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     return Web3Utils.fromWei(address.coin_balance, unit);
   }
 
-  // API
+  // EXTERNAL API
   public async getStats() {
     this.checkActiveStatus();
     const route = BaseBlockScoutApiRoutes.Stats;
@@ -140,7 +145,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     }
   }
 
-  public async getTokenBalances(addressHash: string) {
+  public async getAddressTokenBalances(addressHash: string) {
     this.checkActiveStatus();
     const route = `${BaseBlockScoutApiRoutes.Addresses}/${addressHash}/${BaseBlockScoutApiRoutes.TokenBalances}`;
 
@@ -158,5 +163,53 @@ export class BaseBlockScoutService implements OnModuleInit {
     } catch (error) {
       throw this.handleErrorResponse(route, error);
     }
+  }
+
+  public async getAddressTransactions(
+    addressHash: string,
+    params: IBaseBlockScoutTransactionsPaginate | null = null,
+  ) {
+    this.checkActiveStatus();
+    const route = `${BaseBlockScoutApiRoutes.Addresses}/${addressHash}/${BaseBlockScoutApiRoutes.Transactions}`;
+
+    const url = `${this.apiUrl}${route}`;
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TBaseBlockScoutTransactionsResponse>(url, {
+          params: params ?? {},
+        }),
+      );
+
+      return data;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getAllAddressTransactions(addressHash: string) {
+    let nextParams: IBaseBlockScoutTransactionsPaginate | null = null;
+
+    const transactions: IBaseBlockScoutTransaction[] = [];
+    while (true) {
+      try {
+        const result = await this.getAddressTransactions(addressHash, nextParams);
+        transactions.push(...result.items);
+
+        if (result.next_page_params === null) {
+          break;
+        }
+
+        nextParams = result.next_page_params as IBaseBlockScoutTransactionsPaginate;
+      } catch (error: unknown) {
+        this.logger.error('Error during load all transactions', { error });
+        break;
+      }
+    }
+
+    return transactions;
   }
 }
