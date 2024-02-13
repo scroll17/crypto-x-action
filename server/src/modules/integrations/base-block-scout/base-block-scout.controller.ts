@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { ApiForbiddenResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseBlockScoutService } from './base-block-scout.service';
 import { IntegrationNames } from '@common/integrations/common';
@@ -38,7 +38,7 @@ export class BaseBlockScoutController {
   })
   @ApiParam({ name: 'hash', type: String })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getAddress(@Query('hash') hash: string) {
+  async getAddress(@Param('hash') hash: string) {
     return this.baseBlockScoutService.getAddress(hash);
   }
 
@@ -55,7 +55,7 @@ export class BaseBlockScoutController {
   })
   @ApiParam({ name: 'hash', type: String })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getAddressTokenBalances(@Query('hash') hash: string) {
+  async getAddressTokenBalances(@Param('hash') hash: string) {
     return this.baseBlockScoutService.getAddressTokenBalances(hash);
   }
 
@@ -72,7 +72,24 @@ export class BaseBlockScoutController {
   })
   @ApiParam({ name: 'hash', type: String })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getAddressTransactions(@Query('hash') hash: string) {
+  async getAddressTransactions(@Param('hash') hash: string) {
     return this.baseBlockScoutService.getAllAddressTransactions(hash);
+  }
+
+  @Get('/transactions-stat/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address transactions statistics info in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with transactions stat info by Address.',
+    schema: {
+      type: 'array',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getTransactionsStat(@Param('hash') hash: string) {
+    return this.baseBlockScoutService.getTransactionsStat(hash);
   }
 }

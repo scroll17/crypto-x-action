@@ -1,4 +1,5 @@
-import _ from 'lodash';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import * as Web3Utils from 'web3-utils';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
@@ -17,6 +18,9 @@ import {
   TBaseBlockScoutTokenBalancesResponse,
   TBaseBlockScoutTransactionsResponse,
 } from '@common/integrations/base-block-scout';
+import { ITransactionsStat } from '@common/integrations/common/types/transactions-stat.interface';
+
+dayjs.extend(isoWeek);
 
 @Injectable()
 export class BaseBlockScoutService implements OnModuleInit {
@@ -52,8 +56,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     });
 
     if (this.integration.active) {
-      // await this.initConnection();
-      // TODO
+      await this.initConnection();
     }
   }
 
@@ -108,6 +111,82 @@ export class BaseBlockScoutService implements OnModuleInit {
     return Web3Utils.fromWei(address.coin_balance, unit);
   }
 
+  public buildTransactionsStat(addressHash: string, transactions: IBaseBlockScoutTransaction[]) {
+    const successfulTransactions = transactions.filter((t) => {
+      const isSendByAddress = t.from.hash.toLowerCase() === addressHash.toLowerCase();
+      const isSuccessful = t.result === 'success';
+
+      return isSendByAddress && isSuccessful;
+    });
+
+    const sortedTransactions = successfulTransactions.sort(
+      (a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf(),
+    );
+    const firstTransaction: IBaseBlockScoutTransaction | undefined = sortedTransactions.at(0);
+    const lastTransaction: IBaseBlockScoutTransaction | undefined = sortedTransactions.at(-1);
+
+    const uniqueDays = new Set<string>();
+    const uniqueWeeks = new Set<string>();
+    const uniqueMonths = new Set<string>();
+    const uniqueContracts = new Set<string>();
+
+    const transactionDayMap = new Map<string, string>();
+
+    let totalFee: bigint = BigInt(0);
+    let totalUSDFee: number = 0;
+    let totalVolume: bigint = BigInt(0);
+    let totalUSDVolume: number = 0;
+    let totalGasUsed: bigint = BigInt(0);
+
+    successfulTransactions.forEach((tx) => {
+      // dates
+      const date = new Date(tx.timestamp);
+      uniqueDays.add(date.toDateString());
+      uniqueWeeks.add(date.getFullYear() + '-' + dayjs(date).isoWeek());
+      uniqueMonths.add(date.getFullYear() + '-' + date.getMonth());
+
+      transactionDayMap.set(tx.hash, date.toUTCString());
+
+      // recipients
+      if (tx.to) {
+        uniqueContracts.add(tx.to.hash);
+      }
+
+      // value (money)
+      const exchangeRate = Number.parseInt(tx.exchange_rate);
+
+      totalFee += BigInt(tx.fee.value);
+      totalUSDFee += Number.parseFloat(Web3Utils.fromWei(tx.fee.value, 'ether')) * exchangeRate;
+
+      totalVolume += BigInt(tx.value);
+      totalUSDVolume += Number.parseFloat(Web3Utils.fromWei(tx.value, 'ether')) * exchangeRate;
+
+      totalGasUsed += BigInt(tx.gas_used);
+    });
+
+    const stat: ITransactionsStat = {
+      txCount: successfulTransactions.length,
+      txDayMap: [...transactionDayMap.entries()],
+      firstTxDate: firstTransaction ? new Date(firstTransaction.timestamp) : null,
+      lastTxDate: lastTransaction ? new Date(lastTransaction.timestamp) : null,
+      unique: {
+        days: [...uniqueDays],
+        weeks: [...uniqueWeeks],
+        months: [...uniqueMonths],
+        contracts: [...uniqueContracts],
+      },
+      total: {
+        fee: totalFee.toString(),
+        USDFee: totalUSDFee,
+        volume: totalVolume.toString(),
+        USDVolume: totalUSDVolume,
+        gasUsed: totalGasUsed.toString(),
+      },
+    };
+
+    return stat;
+  }
+
   // EXTERNAL API
   public async getStats() {
     this.checkActiveStatus();
@@ -147,7 +226,7 @@ export class BaseBlockScoutService implements OnModuleInit {
 
   public async getAddressTokenBalances(addressHash: string) {
     this.checkActiveStatus();
-    const route = `${BaseBlockScoutApiRoutes.Addresses}/${addressHash}/${BaseBlockScoutApiRoutes.TokenBalances}`;
+    const route = `${BaseBlockScoutApiRoutes.Addresses}/${addressHash}${BaseBlockScoutApiRoutes.TokenBalances}`;
 
     const url = `${this.apiUrl}${route}`;
     try {
@@ -170,7 +249,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     params: IBaseBlockScoutTransactionsPaginate | null = null,
   ) {
     this.checkActiveStatus();
-    const route = `${BaseBlockScoutApiRoutes.Addresses}/${addressHash}/${BaseBlockScoutApiRoutes.Transactions}`;
+    const route = `${BaseBlockScoutApiRoutes.Addresses}/${addressHash}${BaseBlockScoutApiRoutes.Transactions}`;
 
     const url = `${this.apiUrl}${route}`;
     try {
@@ -211,5 +290,10 @@ export class BaseBlockScoutService implements OnModuleInit {
     }
 
     return transactions;
+  }
+
+  public async getTransactionsStat(addressHash: string) {
+    const transactions = await this.getAllAddressTransactions(addressHash);
+    return this.buildTransactionsStat(addressHash, transactions);
   }
 }
