@@ -104,6 +104,10 @@ export class BaseBlockScoutService implements OnModuleInit {
   }
 
   // INTERNAL API
+  public getIntegrationRecord() {
+    return this.integration;
+  }
+
   public getAddressBalance(
     address: Pick<IBaseBlockScoutWalletAddressData, 'coin_balance'>,
     unit: Web3Utils.EtherUnits,

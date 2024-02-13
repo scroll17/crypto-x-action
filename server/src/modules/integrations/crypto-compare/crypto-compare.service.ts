@@ -103,6 +103,11 @@ export class CryptoCompareService implements OnModuleInit {
     return null;
   }
 
+  // INTERNAL API
+  public getIntegrationRecord() {
+    return this.integration;
+  }
+
   // API
   public async getPrices(fromSymbol: string, toSymbols: string[]) {
     this.checkActiveStatus();
