@@ -12,5 +12,12 @@
     "apiUrl": "https://base.blockscout.com/api/v2",
     "description": "The service which provide Base Mainnet explorer",
     "active": true
+  },
+  {
+    "key": "scroll-block-scout",
+    "name": "ScrollBlockScout",
+    "apiUrl": "https://blockscout.scroll.io/api",
+    "description": "The service which provide Scroll Mainnet explorer",
+    "active": true
   }
 ]
