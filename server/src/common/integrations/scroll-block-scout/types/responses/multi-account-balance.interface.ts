@@ -1,6 +1,6 @@
 import { IScrollBlockScoutGenericResponse } from './generic.interface';
 
-export interface IScrollBlockScoutTotalMultiAccountBalanceData {
+export interface IScrollBlockScoutMultiAccountBalanceData {
   account: string; // "0x1480ceda0426d7263214dd1cdde148803919d846",
   balance: string; // "60082825507761",
   stale: boolean;
@@ -11,5 +11,5 @@ export interface IScrollBlockScoutTotalMultiAccountBalanceData {
 }
 
 export type TScrollBlockScoutMultiAccountBalanceResponse = IScrollBlockScoutGenericResponse<
-  IScrollBlockScoutTotalMultiAccountBalanceData[]
+  IScrollBlockScoutMultiAccountBalanceData[]
 >;

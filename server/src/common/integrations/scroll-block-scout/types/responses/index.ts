@@ -4,6 +4,10 @@ export { TScrollBlockScoutCoinPriceResponse, IScrollBlockScoutCoinPriceData } fr
 export { TScrollBlockScoutAccountBalanceResponse } from './account-balance.interface';
 export {
   TScrollBlockScoutMultiAccountBalanceResponse,
-  IScrollBlockScoutTotalMultiAccountBalanceData,
+  IScrollBlockScoutMultiAccountBalanceData,
 } from './multi-account-balance.interface';
 export { TScrollBlockScoutTokenBalanceResponse } from './token-balance.interface';
+export {
+  TScrollBlockScoutAccountTransactionsResponse,
+  IScrollBlockScoutAccountTransactionsData,
+} from './account-transactions.interface';
