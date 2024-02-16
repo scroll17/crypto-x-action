@@ -15,6 +15,7 @@ import {
   TScrollBlockScoutCoinPriceResponse,
   TScrollBlockScoutAccountBalanceResponse,
   IScrollBlockScoutGenericResponse,
+  TScrollBlockScoutMultiAccountBalanceResponse,
 } from '@common/integrations/scroll-block-scout';
 
 dayjs.extend(isoWeek);
@@ -52,9 +53,10 @@ export class ScrollBlockScoutService implements OnModuleInit {
       apiUrl: integration.apiUrl,
     });
 
-    // TODO
-    // const address = '0x1480ceda0426d7263214dd1cdde148803919d846DD';
-    // const result = await this.getAccountBalance(address);
+    // // TODO
+    // const address1 = '0x1480ceda0426d7263214dd1cdde148803919d846';
+    // const address2 = '0x58a4d49483285bb177c15805d14841637149b0e3';
+    // const result = await this.getMultiAccountBalances([address1, address2]);
     // console.log('result =>', result);
 
     if (this.integration.active) {
@@ -218,11 +220,37 @@ export class ScrollBlockScoutService implements OnModuleInit {
       throw this.handleErrorResponse(route, error);
     }
   }
+
+  public async getMultiAccountBalances(addressHashes: string[]) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ScrollBlockScoutApiModules.Account,
+      action: ScrollBlockScoutApiActions.BalanceMulti,
+      address: addressHashes.join(','),
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TScrollBlockScoutMultiAccountBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return {
+        balance: data.result,
+      };
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 }
 
 /**
- *  2. balanceMulti
- *    ?module=account&action=balancemulti&address={addressHash1,addressHash2,addressHash3}
  *  3. transactions
  *    ?module=account&action=txlist&address={addressHash}
  *  4. token balance
