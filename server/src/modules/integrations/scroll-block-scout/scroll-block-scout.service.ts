@@ -15,9 +15,11 @@ import {
   TScrollBlockScoutCoinPriceResponse,
   TScrollBlockScoutAccountBalanceResponse,
   IScrollBlockScoutGenericResponse,
-  TScrollBlockScoutMultiAccountBalanceResponse, TScrollBlockScoutTokenBalanceResponse,
+  TScrollBlockScoutMultiAccountBalanceResponse,
+  TScrollBlockScoutTokenBalanceResponse,
+  TScrollBlockScoutAccountTransactionsResponse,
 } from '@common/integrations/scroll-block-scout';
-import {AppConstants} from "../../../app.constants";
+import { AppConstants } from '../../../app.constants';
 
 dayjs.extend(isoWeek);
 
@@ -54,10 +56,10 @@ export class ScrollBlockScoutService implements OnModuleInit {
       apiUrl: integration.apiUrl,
     });
 
-    // // // TODO
+    // TODO
     // const address1 = '0x1480ceda0426d7263214dd1cdde148803919d846';
-    // // const address2 = '0x58a4d49483285bb177c15805d14841637149b0e3';
-    // const result = await this.getTokenBalance(address1, AppConstants.Integration.Scroll.COIN_CONTRACTS.USDT.address);
+    // const address2 = '0x58a4d49483285bb177c15805d14841637149b0e3';
+    // const result = await this.getAddressTransactions(address1);
     // console.log('result =>', result);
 
     if (this.integration.active) {
@@ -83,7 +85,7 @@ export class ScrollBlockScoutService implements OnModuleInit {
     }
   }
 
-  private convertParams(params: Record<string, string>) {
+  private convertParams(params: Record<string, string | number>) {
     return Object.entries(params)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
@@ -194,7 +196,7 @@ export class ScrollBlockScoutService implements OnModuleInit {
     }
   }
 
-  public async getAccountBalance(addressHash: string) {
+  public async getAddressBalance(addressHash: string) {
     this.checkActiveStatus();
 
     const params = {
@@ -222,7 +224,7 @@ export class ScrollBlockScoutService implements OnModuleInit {
     }
   }
 
-  public async getMultiAccountBalances(addressHashes: string[]) {
+  public async getMultiAddressBalances(addressHashes: string[]) {
     this.checkActiveStatus();
 
     const params = {
@@ -276,9 +278,40 @@ export class ScrollBlockScoutService implements OnModuleInit {
       throw this.handleErrorResponse(route, error);
     }
   }
-}
 
-/**
- *  3. transactions
- *    ?module=account&action=txlist&address={addressHash}
- * */
+  public async getAddressTransactions(addressHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ScrollBlockScoutApiModules.Account,
+      action: ScrollBlockScoutApiActions.TXList,
+      address: addressHash,
+      page: 1,
+      offset: 1000,
+      /**
+       *   A nonnegative integer that represents
+       *   the maximum number of records to return when paginating. 'page' must be provided in conjunction.
+       * */
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TScrollBlockScoutAccountTransactionsResponse>(this.apiUrl, { params }),
+      );
+      if (data.result.length === 0) {
+        return data.result;
+      }
+
+      this.validateResponse(route, data);
+
+      return data.result;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+}

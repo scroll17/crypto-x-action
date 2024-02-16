@@ -62,7 +62,24 @@ export class ScrollBlockScoutController {
   @ApiParam({ name: 'hash', type: String })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAccountBalance(@Param('hash') hash: string) {
-    return this.scrollBlockScoutService.getAccountBalance(hash);
+    return this.scrollBlockScoutService.getAddressBalance(hash);
+  }
+
+  @Get('/address-transactions/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address transactions in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Array of Address transactions.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAddressTransactions(@Param('hash') hash: string) {
+    return this.scrollBlockScoutService.getAddressTransactions(hash);
   }
 
   @Get('/token-balance')
