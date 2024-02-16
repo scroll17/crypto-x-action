@@ -133,6 +133,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     const uniqueWeeks = new Set<string>();
     const uniqueMonths = new Set<string>();
     const uniqueContracts = new Set<string>();
+    const deployedContracts = new Set<string>();
 
     const transactionDayMap = new Map<string, string>();
 
@@ -141,6 +142,8 @@ export class BaseBlockScoutService implements OnModuleInit {
     let totalVolume: bigint = BigInt(0);
     let totalUSDVolume: number = 0;
     let totalGasUsed: bigint = BigInt(0);
+    let totalGasPrice: bigint = BigInt(0);
+    let totalUSDGasPrice: number = 0;
 
     successfulTransactions.forEach((tx) => {
       // dates
@@ -155,6 +158,9 @@ export class BaseBlockScoutService implements OnModuleInit {
       if (tx.to) {
         uniqueContracts.add(tx.to.hash);
       }
+      if (tx.created_contract) {
+        deployedContracts.add(tx.created_contract.hash);
+      }
 
       // value (money)
       const exchangeRate = Number.parseInt(tx.exchange_rate);
@@ -165,7 +171,12 @@ export class BaseBlockScoutService implements OnModuleInit {
       totalVolume += BigInt(tx.value);
       totalUSDVolume += Number.parseFloat(Web3Utils.fromWei(tx.value, 'ether')) * exchangeRate;
 
+      const transactionTotalGasPrice = BigInt(tx.gas_used) * BigInt(tx.gas_price);
+
       totalGasUsed += BigInt(tx.gas_used);
+      totalGasPrice += transactionTotalGasPrice;
+      totalUSDGasPrice +=
+        Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * exchangeRate;
     });
 
     const stat: ITransactionsStat = {
@@ -179,12 +190,15 @@ export class BaseBlockScoutService implements OnModuleInit {
         months: [...uniqueMonths],
         contracts: [...uniqueContracts],
       },
+      deployedContracts: [...deployedContracts],
       total: {
         fee: totalFee.toString(),
         USDFee: totalUSDFee,
         volume: totalVolume.toString(),
         USDVolume: totalUSDVolume,
         gasUsed: totalGasUsed.toString(),
+        gasPrice: totalGasPrice.toString(),
+        USDGasPrice: totalUSDGasPrice,
       },
     };
 

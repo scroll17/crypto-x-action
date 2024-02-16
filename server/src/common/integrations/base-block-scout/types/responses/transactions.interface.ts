@@ -107,7 +107,7 @@ export interface IBaseBlockScoutTransaction {
   tx_types: Array<
     'token_transfer' | 'contract_creation' | 'contract_call' | 'token_creation' | 'coin_transfer'
   >;
-  created_contract: Record<string, unknown> | null;
+  created_contract: Omit<IBaseBlockScoutTransactionSender, 'ens_domain_name'> | null;
   position: number;
   nonce: number;
   has_error_in_internal_txs: boolean;

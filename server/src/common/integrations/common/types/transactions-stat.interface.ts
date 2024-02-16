@@ -9,11 +9,14 @@ export interface ITransactionsStat {
     months: string[];
     contracts: string[];
   };
+  deployedContracts: string[];
   total: {
     fee: string;
     USDFee: number;
     volume: string;
     USDVolume: number;
     gasUsed: string;
+    gasPrice: string;
+    USDGasPrice: number;
   };
 }
