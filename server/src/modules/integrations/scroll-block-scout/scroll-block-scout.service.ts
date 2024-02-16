@@ -110,7 +110,29 @@ export class ScrollBlockScoutService implements OnModuleInit {
   }
 
   // EXTERNAL API
+  public async getCoinPrice() {
+    this.checkActiveStatus();
 
+    const params = {
+      module: ScrollBlockScoutApiModules.Stats,
+      action: ScrollBlockScoutApiActions.CoinPrice,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TScrollBlockScoutCoinPriceResponse>(this.apiUrl, { params }),
+      );
+
+      return data;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 
   public async getTotalFees(date: string = dayjs().format('YYYY-MM-DD')) {
     this.checkActiveStatus();

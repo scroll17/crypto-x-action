@@ -24,4 +24,20 @@ export class ScrollBlockScoutController {
   async getTotalFees() {
     return this.scrollBlockScoutService.getTotalFees();
   }
+
+  @Get('/coin-price')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get latest price of native coin in USD and BTC.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Latest price of native coin in USD and BTC.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getCoinPrice() {
+    return this.scrollBlockScoutService.getCoinPrice();
+  }
 }
