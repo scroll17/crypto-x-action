@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { AxiosError } from 'axios';
+import * as Web3Utils from 'web3-utils';
 import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
@@ -12,6 +13,8 @@ import {
   ScrollBlockScoutApiModules,
   TScrollBlockScoutTotalFeesResponse,
   TScrollBlockScoutCoinPriceResponse,
+  TScrollBlockScoutAccountBalanceResponse,
+  IScrollBlockScoutGenericResponse,
 } from '@common/integrations/scroll-block-scout';
 
 dayjs.extend(isoWeek);
@@ -48,6 +51,11 @@ export class ScrollBlockScoutService implements OnModuleInit {
       active: integration.active,
       apiUrl: integration.apiUrl,
     });
+
+    // TODO
+    // const address = '0x1480ceda0426d7263214dd1cdde148803919d846DD';
+    // const result = await this.getAccountBalance(address);
+    // console.log('result =>', result);
 
     if (this.integration.active) {
       await this.initConnection();
@@ -104,9 +112,32 @@ export class ScrollBlockScoutService implements OnModuleInit {
     return error;
   }
 
+  private validateResponse(route: string, data: IScrollBlockScoutGenericResponse<unknown>) {
+    /**
+     *  {
+     *   "message": "Invalid address hash",
+     *   "result": null,
+     *   "status": "0"
+     * }
+     * */
+
+    if ('status' in data && data.status === '0') {
+      const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}" with massage "${data.message}"`;
+
+      this.logger.error(message, { ...data });
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
+    }
+
+    return;
+  }
+
   // INTERNAL API
   public getIntegrationRecord() {
     return this.integration;
+  }
+
+  public convertAddressBalance(weiBalance: string, unit: Web3Utils.EtherUnits) {
+    return Web3Utils.fromWei(weiBalance, unit);
   }
 
   // EXTERNAL API
@@ -152,8 +183,37 @@ export class ScrollBlockScoutService implements OnModuleInit {
       const { data } = await firstValueFrom(
         this.httpService.get<TScrollBlockScoutTotalFeesResponse>(this.apiUrl, { params }),
       );
+      this.validateResponse(route, data);
 
-      return data;
+      return data.result;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getAccountBalance(addressHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ScrollBlockScoutApiModules.Account,
+      action: ScrollBlockScoutApiActions.Balance,
+      address: addressHash,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TScrollBlockScoutAccountBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return {
+        balance: data.result,
+      };
     } catch (error) {
       throw this.handleErrorResponse(route, error);
     }
@@ -161,8 +221,6 @@ export class ScrollBlockScoutService implements OnModuleInit {
 }
 
 /**
- *  1. balance
- *    ?module=account&action=balance&address={addressHash}
  *  2. balanceMulti
  *    ?module=account&action=balancemulti&address={addressHash1,addressHash2,addressHash3}
  *  3. transactions
