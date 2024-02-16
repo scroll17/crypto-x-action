@@ -1,11 +1,18 @@
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { AxiosError } from 'axios';
+import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
+import {
+  ScrollBlockScoutApiActions,
+  ScrollBlockScoutApiModules,
+  TScrollBlockScoutTotalFeesResponse,
+  TScrollBlockScoutCoinPriceResponse,
+} from '@common/integrations/scroll-block-scout';
 
 dayjs.extend(isoWeek);
 
@@ -50,11 +57,12 @@ export class ScrollBlockScoutService implements OnModuleInit {
   private async initConnection() {
     this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
-    // const result = await this.getStats();
+    const date = dayjs().format('YYYY-MM-DD');
+    const result = await this.getTotalFees(date);
 
-    // this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
-    //   stats: result,
-    // });
+    this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
+      stats: result,
+    });
   }
 
   // TOOLS
@@ -62,6 +70,12 @@ export class ScrollBlockScoutService implements OnModuleInit {
     if (!this.integration.active) {
       throw new HttpException(`Integration "${this.INTEGRATION_KEY}" is not active`, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private convertParams(params: Record<string, string>) {
+    return Object.entries(params)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
   }
 
   private handleErrorResponse(route: string, error: Error | AxiosError) {
@@ -96,4 +110,41 @@ export class ScrollBlockScoutService implements OnModuleInit {
   }
 
   // EXTERNAL API
+
+
+  public async getTotalFees(date: string = dayjs().format('YYYY-MM-DD')) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ScrollBlockScoutApiModules.Stats,
+      action: ScrollBlockScoutApiActions.TotalFees,
+      date: date,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TScrollBlockScoutTotalFeesResponse>(this.apiUrl, { params }),
+      );
+
+      return data;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 }
+
+/**
+ *  1. balance
+ *    ?module=account&action=balance&address={addressHash}
+ *  2. balanceMulti
+ *    ?module=account&action=balancemulti&address={addressHash1,addressHash2,addressHash3}
+ *  3. transactions
+ *    ?module=account&action=txlist&address={addressHash}
+ *  4. token balance
+ *    ?module=account&action=tokenbalance&contractaddress={contractAddressHash}&address={addressHash}
+ * */
