@@ -68,7 +68,7 @@ export class CryptoCompareService implements OnModuleInit {
     }
   }
 
-  private handleErrorResponse(
+  private validateResponse(
     route: string,
     data: ICryptoGetawayGenericResponse<unknown> | Record<string, unknown>,
   ) {
@@ -130,7 +130,7 @@ export class CryptoCompareService implements OnModuleInit {
       const { data: rawData } = await firstValueFrom(
         this.httpService.get<ICryptoGetawayGenericResponse<unknown> | TCryptoGetawayDataResponse>(url),
       );
-      this.handleErrorResponse(route, rawData);
+      this.validateResponse(route, rawData);
 
       const data = rawData as TCryptoGetawayDataResponse;
 
@@ -176,7 +176,7 @@ export class CryptoCompareService implements OnModuleInit {
       });
 
       const { data } = await firstValueFrom(this.httpService.get<TCryptoGetawayRateLimitResponse>(url));
-      this.handleErrorResponse(route, data);
+      this.validateResponse(route, data);
 
       return data.Data;
     } catch (error) {
