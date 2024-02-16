@@ -1,5 +1,5 @@
 export interface IScrollBlockScoutGenericResponse<TResult> {
-  message: 'OK';
+  message: 'OK' | string;
   result: TResult;
   status: '0' | '1';
 }
