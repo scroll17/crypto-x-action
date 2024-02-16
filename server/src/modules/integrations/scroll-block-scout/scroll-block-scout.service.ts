@@ -15,8 +15,9 @@ import {
   TScrollBlockScoutCoinPriceResponse,
   TScrollBlockScoutAccountBalanceResponse,
   IScrollBlockScoutGenericResponse,
-  TScrollBlockScoutMultiAccountBalanceResponse,
+  TScrollBlockScoutMultiAccountBalanceResponse, TScrollBlockScoutTokenBalanceResponse,
 } from '@common/integrations/scroll-block-scout';
+import {AppConstants} from "../../../app.constants";
 
 dayjs.extend(isoWeek);
 
@@ -53,10 +54,10 @@ export class ScrollBlockScoutService implements OnModuleInit {
       apiUrl: integration.apiUrl,
     });
 
-    // // TODO
+    // // // TODO
     // const address1 = '0x1480ceda0426d7263214dd1cdde148803919d846';
-    // const address2 = '0x58a4d49483285bb177c15805d14841637149b0e3';
-    // const result = await this.getMultiAccountBalances([address1, address2]);
+    // // const address2 = '0x58a4d49483285bb177c15805d14841637149b0e3';
+    // const result = await this.getTokenBalance(address1, AppConstants.Integration.Scroll.COIN_CONTRACTS.USDT.address);
     // console.log('result =>', result);
 
     if (this.integration.active) {
@@ -241,6 +242,33 @@ export class ScrollBlockScoutService implements OnModuleInit {
       );
       this.validateResponse(route, data);
 
+      return data.result;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getTokenBalance(addressHash: string, contractHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ScrollBlockScoutApiModules.Account,
+      action: ScrollBlockScoutApiActions.TokenBalance,
+      address: addressHash,
+      contractaddress: contractHash,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TScrollBlockScoutTokenBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
       return {
         balance: data.result,
       };
@@ -253,6 +281,4 @@ export class ScrollBlockScoutService implements OnModuleInit {
 /**
  *  3. transactions
  *    ?module=account&action=txlist&address={addressHash}
- *  4. token balance
- *    ?module=account&action=tokenbalance&contractaddress={contractAddressHash}&address={addressHash}
  * */
