@@ -6,3 +6,4 @@ export {
   TScrollBlockScoutMultiAccountBalanceResponse,
   IScrollBlockScoutTotalMultiAccountBalanceData,
 } from './multi-account-balance.interface';
+export { TScrollBlockScoutTokenBalanceResponse } from './token-balance.interface';
