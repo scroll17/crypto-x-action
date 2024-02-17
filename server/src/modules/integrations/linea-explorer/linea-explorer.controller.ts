@@ -1,5 +1,5 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
+import { ApiForbiddenResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LineaExplorerService } from './linea-explorer.service';
 import { IntegrationNames } from '@common/integrations/common';
 import { DevEndpoint } from '@common/decorators';
@@ -39,5 +39,22 @@ export class LineaExplorerController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getCoinPrice() {
     return this.lineaExplorerService.getCoinPrice();
+  }
+
+  @Get('/address-balance/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address balance in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Address balance.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAccountBalance(@Param('hash') hash: string) {
+    return this.lineaExplorerService.getAddressBalance(hash);
   }
 }

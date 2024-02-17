@@ -11,6 +11,7 @@ import {
   ILineaExplorerGenericResponse,
   LineaExplorerApiActions,
   LineaExplorerApiModules,
+  TLineaExplorerAccountBalanceResponse,
   TLineaExplorerCoinPriceResponse,
   TLineaExplorerTotalFeesResponse,
 } from '@common/integrations/linea-explorer';
@@ -177,6 +178,34 @@ export class LineaExplorerService implements OnModuleInit {
       this.validateResponse(route, data);
 
       return data.result;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getAddressBalance(addressHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: LineaExplorerApiModules.Account,
+      action: LineaExplorerApiActions.Balance,
+      address: addressHash,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TLineaExplorerAccountBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return {
+        balance: data.result,
+      };
     } catch (error) {
       throw this.handleErrorResponse(route, error);
     }
