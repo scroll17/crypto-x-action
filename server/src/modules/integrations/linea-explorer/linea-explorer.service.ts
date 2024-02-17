@@ -12,6 +12,7 @@ import {
   LineaExplorerApiActions,
   LineaExplorerApiModules,
   TLineaExplorerCoinPriceResponse,
+  TLineaExplorerTotalFeesResponse,
 } from '@common/integrations/linea-explorer';
 
 @Injectable()
@@ -56,7 +57,7 @@ export class LineaExplorerService implements OnModuleInit {
     this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
     const date = dayjs().format('YYYY-MM-DD');
-    const result = await this.getCoinPrice();
+    const result = await this.getTotalFees(date);
 
     this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
       stats: result,
@@ -150,6 +151,32 @@ export class LineaExplorerService implements OnModuleInit {
       );
 
       return data;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getTotalFees(date: string = dayjs().format('YYYY-MM-DD')) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: LineaExplorerApiModules.Stats,
+      action: LineaExplorerApiActions.TotalFees,
+      date: date,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TLineaExplorerTotalFeesResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return data.result;
     } catch (error) {
       throw this.handleErrorResponse(route, error);
     }
