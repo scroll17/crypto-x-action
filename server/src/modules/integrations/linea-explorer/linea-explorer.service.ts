@@ -1,11 +1,18 @@
 import dayjs from 'dayjs';
-import { AxiosError } from 'axios';
 import * as Web3Utils from 'web3-utils';
+import { AxiosError } from 'axios';
+import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
+import {
+  ILineaExplorerGenericResponse,
+  LineaExplorerApiActions,
+  LineaExplorerApiModules,
+  TLineaExplorerCoinPriceResponse,
+} from '@common/integrations/linea-explorer';
 
 @Injectable()
 export class LineaExplorerService implements OnModuleInit {
@@ -48,12 +55,12 @@ export class LineaExplorerService implements OnModuleInit {
   private async initConnection() {
     this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
-    // const date = dayjs().format('YYYY-MM-DD');
-    // const result = await this.getTotalFees(date);
+    const date = dayjs().format('YYYY-MM-DD');
+    const result = await this.getCoinPrice();
 
-    // this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
-    //   stats: result,
-    // });
+    this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
+      stats: result,
+    });
   }
 
   // TOOLS
@@ -95,8 +102,7 @@ export class LineaExplorerService implements OnModuleInit {
     return error;
   }
 
-  // TODO:
-  private validateResponse(route: string, data: any) {
+  private validateResponse(route: string, data: ILineaExplorerGenericResponse<unknown>) {
     /**
      *  {
      *   "message": "Invalid address hash",
@@ -125,4 +131,27 @@ export class LineaExplorerService implements OnModuleInit {
   }
 
   // EXTERNAL API
+  public async getCoinPrice() {
+    this.checkActiveStatus();
+
+    const params = {
+      module: LineaExplorerApiModules.Stats,
+      action: LineaExplorerApiActions.CoinPrice,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TLineaExplorerCoinPriceResponse>(this.apiUrl, { params }),
+      );
+
+      return data;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 }
