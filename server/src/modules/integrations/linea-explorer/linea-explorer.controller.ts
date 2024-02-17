@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, ParseFloatPipe, Query } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -80,6 +80,27 @@ export class LineaExplorerController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAddressTransactions(@Param('hash') hash: string) {
     return this.lineaExplorerService.getAddressTransactions(hash);
+  }
+
+  @Get('/transactions-stat/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address transactions statistics info in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with transactions stat info by Address.',
+    schema: {
+      type: 'array',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiQuery({ name: 'ethPrice', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getTransactionsStat(
+    @Param('hash') hash: string,
+    @Query('ethPrice', ParseFloatPipe) ethPrice: number,
+  ) {
+    return this.lineaExplorerService.getTransactionsStat(hash, ethPrice);
   }
 
   @Get('/token-balance')

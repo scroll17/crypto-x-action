@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
 import {
+  ILineaExplorerAccountTransactionsData,
   ILineaExplorerGenericResponse,
   LineaExplorerApiActions,
   LineaExplorerApiModules,
@@ -18,6 +19,7 @@ import {
   TLineaExplorerTokenBalanceResponse,
   TLineaExplorerTotalFeesResponse,
 } from '@common/integrations/linea-explorer';
+import { ITransactionsStat } from '@common/integrations/common/types/transactions-stat.interface';
 
 @Injectable()
 export class LineaExplorerService implements OnModuleInit {
@@ -133,6 +135,102 @@ export class LineaExplorerService implements OnModuleInit {
 
   public convertAddressBalance(weiBalance: string, unit: Web3Utils.EtherUnits) {
     return Web3Utils.fromWei(weiBalance, unit);
+  }
+
+  public buildTransactionsStat(
+    addressHash: string,
+    transactions: ILineaExplorerAccountTransactionsData[],
+    exchangeRate: number,
+  ) {
+    const successfulTransactions = transactions.filter((t) => {
+      const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
+      const isReceipted = t.txreceipt_status === '1';
+      const hastError = t.isError === '0';
+
+      return isSendByAddress && isReceipted && hastError;
+    });
+
+    const sortedTransactions = successfulTransactions.sort((a, b) => {
+      const time1 = new Date(Number.parseInt(a.timeStamp) * 1000).valueOf();
+      const time2 = new Date(Number.parseInt(b.timeStamp) * 1000).valueOf();
+
+      return time1 - time2;
+    });
+    const firstTransaction: ILineaExplorerAccountTransactionsData | undefined = sortedTransactions.at(0);
+    const lastTransaction: ILineaExplorerAccountTransactionsData | undefined = sortedTransactions.at(-1);
+
+    const uniqueDays = new Set<string>();
+    const uniqueWeeks = new Set<string>();
+    const uniqueMonths = new Set<string>();
+    const uniqueContracts = new Set<string>();
+    const deployedContracts = new Set<string>();
+
+    const transactionDayMap = new Map<string, string>();
+
+    let totalFee: bigint = BigInt(0);
+    let totalUSDFee: number = 0;
+    let totalVolume: bigint = BigInt(0);
+    let totalUSDVolume: number = 0;
+    let totalGasUsed: bigint = BigInt(0);
+    let totalGasPrice: bigint = BigInt(0);
+    let totalUSDGasPrice: number = 0;
+
+    successfulTransactions.forEach((tx) => {
+      // dates
+      const date = new Date(Number.parseInt(tx.timeStamp) * 1000);
+      uniqueDays.add(date.toDateString());
+      uniqueWeeks.add(date.getFullYear() + '-' + dayjs(date).isoWeek());
+      uniqueMonths.add(date.getFullYear() + '-' + date.getMonth());
+
+      transactionDayMap.set(tx.hash, date.toUTCString());
+
+      // recipients
+      if (tx.to) {
+        uniqueContracts.add(tx.to);
+      }
+      if (tx.contractAddress) {
+        deployedContracts.add(tx.contractAddress);
+      }
+
+      // value (money)
+      totalFee += BigInt(0);
+      totalUSDFee += 0;
+
+      totalVolume += BigInt(tx.value);
+      totalUSDVolume += Number.parseFloat(Web3Utils.fromWei(tx.value, 'ether')) * exchangeRate;
+
+      const transactionTotalGasPrice = BigInt(tx.gasUsed) * BigInt(tx.gasPrice);
+
+      totalGasUsed += BigInt(tx.gasUsed);
+      totalGasPrice += transactionTotalGasPrice;
+      totalUSDGasPrice +=
+        Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * exchangeRate;
+    });
+
+    const stat: ITransactionsStat = {
+      txCount: successfulTransactions.length,
+      txDayMap: [...transactionDayMap.entries()],
+      firstTxDate: firstTransaction ? new Date(Number.parseInt(firstTransaction.timeStamp) * 1000) : null,
+      lastTxDate: lastTransaction ? new Date(Number.parseInt(lastTransaction.timeStamp) * 1000) : null,
+      unique: {
+        days: [...uniqueDays],
+        weeks: [...uniqueWeeks],
+        months: [...uniqueMonths],
+        contracts: [...uniqueContracts],
+      },
+      deployedContracts: [...deployedContracts],
+      total: {
+        fee: totalFee.toString(),
+        USDFee: totalUSDFee,
+        volume: totalVolume.toString(),
+        USDVolume: totalUSDVolume,
+        gasUsed: totalGasUsed.toString(),
+        gasPrice: totalGasPrice.toString(),
+        USDGasPrice: totalUSDGasPrice,
+      },
+    };
+
+    return stat;
   }
 
   // EXTERNAL API
@@ -303,5 +401,10 @@ export class LineaExplorerService implements OnModuleInit {
     } catch (error) {
       throw this.handleErrorResponse(route, error);
     }
+  }
+
+  public async getTransactionsStat(addressHash: string, ethPrice: number) {
+    const transactions = await this.getAddressTransactions(addressHash);
+    return this.buildTransactionsStat(addressHash, transactions, ethPrice);
   }
 }
