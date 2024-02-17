@@ -19,5 +19,12 @@
     "apiUrl": "https://blockscout.scroll.io/api",
     "description": "The service which provide Scroll Mainnet explorer",
     "active": true
+  },
+  {
+    "key": "linea-explorer",
+    "name": "LineaExplorer",
+    "apiUrl": "https://explorer.linea.build/api",
+    "description": "The service which provide Linea Mainnet explorer",
+    "active": true
   }
 ]
