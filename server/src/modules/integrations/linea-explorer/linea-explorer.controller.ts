@@ -1,5 +1,12 @@
-import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import {
+  ApiForbiddenResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LineaExplorerService } from './linea-explorer.service';
 import { IntegrationNames } from '@common/integrations/common';
 import { DevEndpoint } from '@common/decorators';
@@ -56,5 +63,23 @@ export class LineaExplorerController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAccountBalance(@Param('hash') hash: string) {
     return this.lineaExplorerService.getAddressBalance(hash);
+  }
+
+  @Get('/token-balance')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Token balance by Address & Contract in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with balance.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiQuery({ name: 'address', type: String })
+  @ApiQuery({ name: 'contract', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getTokenBalance(@Query('address') address: string, @Query('contract') contract: string) {
+    return this.lineaExplorerService.getTokenBalance(address, contract);
   }
 }

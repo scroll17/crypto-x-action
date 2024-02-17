@@ -13,6 +13,8 @@ import {
   LineaExplorerApiModules,
   TLineaExplorerAccountBalanceResponse,
   TLineaExplorerCoinPriceResponse,
+  TLineaExplorerMultiAccountBalanceResponse,
+  TLineaExplorerTokenBalanceResponse,
   TLineaExplorerTotalFeesResponse,
 } from '@common/integrations/linea-explorer';
 
@@ -200,6 +202,61 @@ export class LineaExplorerService implements OnModuleInit {
 
       const { data } = await firstValueFrom(
         this.httpService.get<TLineaExplorerAccountBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return {
+        balance: data.result,
+      };
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getMultiAddressBalances(addressHashes: string[]) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: LineaExplorerApiModules.Account,
+      action: LineaExplorerApiActions.BalanceMulti,
+      address: addressHashes.join(','),
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TLineaExplorerMultiAccountBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return data.result;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getTokenBalance(addressHash: string, contractHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: LineaExplorerApiModules.Account,
+      action: LineaExplorerApiActions.TokenBalance,
+      address: addressHash,
+      contractaddress: contractHash,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TLineaExplorerTokenBalanceResponse>(this.apiUrl, { params }),
       );
       this.validateResponse(route, data);
 
