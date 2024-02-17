@@ -65,6 +65,23 @@ export class LineaExplorerController {
     return this.lineaExplorerService.getAddressBalance(hash);
   }
 
+  @Get('/address-transactions/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address transactions in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Array of Address transactions.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAddressTransactions(@Param('hash') hash: string) {
+    return this.lineaExplorerService.getAddressTransactions(hash);
+  }
+
   @Get('/token-balance')
   @DevEndpoint()
   @HttpCode(HttpStatus.OK)

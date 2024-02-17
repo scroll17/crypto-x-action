@@ -12,6 +12,7 @@ import {
   LineaExplorerApiActions,
   LineaExplorerApiModules,
   TLineaExplorerAccountBalanceResponse,
+  TLineaExplorerAccountTransactionsResponse,
   TLineaExplorerCoinPriceResponse,
   TLineaExplorerMultiAccountBalanceResponse,
   TLineaExplorerTokenBalanceResponse,
@@ -263,6 +264,42 @@ export class LineaExplorerService implements OnModuleInit {
       return {
         balance: data.result,
       };
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getAddressTransactions(addressHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: LineaExplorerApiModules.Account,
+      action: LineaExplorerApiActions.TXList,
+      address: addressHash,
+      page: 1,
+      offset: 1000,
+      /**
+       *   A nonnegative integer that represents
+       *   the maximum number of records to return when paginating. 'page' must be provided in conjunction.
+       * */
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TLineaExplorerAccountTransactionsResponse>(this.apiUrl, { params }),
+      );
+      if (data.result.length === 0) {
+        return data.result;
+      }
+
+      this.validateResponse(route, data);
+
+      return data.result;
     } catch (error) {
       throw this.handleErrorResponse(route, error);
     }
