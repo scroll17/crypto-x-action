@@ -26,5 +26,12 @@
     "apiUrl": "https://explorer.linea.build/api",
     "description": "The service which provide Linea Mainnet explorer",
     "active": true
+  },
+  {
+    "key": "zk-sync-block-explorer",
+    "name": "ZkSyncBlockExplorer",
+    "apiUrl": "https://block-explorer-api.mainnet.zksync.io",
+    "description": "The service which provide ZkSync Mainnet explorer",
+    "active": true
   }
 ]

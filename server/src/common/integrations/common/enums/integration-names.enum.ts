@@ -3,4 +3,5 @@ export enum IntegrationNames {
   BaseBlockScout = 'base-block-scout',
   ScrollBlockScout = 'scroll-block-scout',
   LineaExplorer = 'linea-explorer',
+  ZkSyncBlockExplorer = 'zk-sync-block-explorer',
 }
