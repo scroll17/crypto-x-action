@@ -1,5 +1,6 @@
 import * as Web3Utils from 'web3-utils';
 import { AxiosError } from 'axios';
+import dayjs from 'dayjs';
 import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
@@ -7,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
 import {
+  IZkSyncBlockExplorerAccountTransactionsData,
   IZkSyncBlockExplorerGenericResponse,
   TZkSyncBlockExplorerAccountBalanceResponse,
   TZkSyncBlockExplorerAccountTransactionsResponse,
@@ -16,6 +18,7 @@ import {
   ZkSyncBlockExplorerApiActions,
   ZkSyncBlockExplorerApiModules,
 } from '@common/integrations/zk-sync-block-explorer';
+import { ITransactionsStat } from '@common/integrations/common';
 
 @Injectable()
 export class ZkSyncBlockExplorerService implements OnModuleInit {
@@ -49,6 +52,10 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       active: integration.active,
       apiUrl: integration.apiUrl,
     });
+
+    const address = '0xc1d0c82d463758839ab8adb6e2a976561cae3992';
+    const stat = await this.getTransactionsStat(address);
+    console.log('stat =>', stat);
 
     if (this.integration.active) {
       await this.initConnection();
@@ -135,6 +142,104 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     return;
   }
 
+  public buildTransactionsStat(
+    addressHash: string,
+    transactions: IZkSyncBlockExplorerAccountTransactionsData[],
+    ethExchangeRate: number,
+  ) {
+    const successfulTransactions = transactions.filter((t) => {
+      const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
+      const isReceipted = t.txreceipt_status === '1';
+      const hastError = t.isError === '0';
+
+      return isSendByAddress && isReceipted && hastError;
+    });
+
+    const sortedTransactions = successfulTransactions.sort((a, b) => {
+      const time1 = new Date(Number.parseInt(a.timeStamp) * 1000).valueOf();
+      const time2 = new Date(Number.parseInt(b.timeStamp) * 1000).valueOf();
+
+      return time1 - time2;
+    });
+    const firstTransaction: IZkSyncBlockExplorerAccountTransactionsData | undefined =
+      sortedTransactions.at(0);
+    const lastTransaction: IZkSyncBlockExplorerAccountTransactionsData | undefined =
+      sortedTransactions.at(-1);
+
+    const uniqueDays = new Set<string>();
+    const uniqueWeeks = new Set<string>();
+    const uniqueMonths = new Set<string>();
+    const uniqueContracts = new Set<string>();
+    const deployedContracts = new Set<string>();
+
+    const transactionDayMap = new Map<string, string>();
+
+    let totalFee: bigint = BigInt(0);
+    let totalUSDFee: number = 0;
+    let totalVolume: bigint = BigInt(0);
+    let totalUSDVolume: number = 0;
+    let totalGasUsed: bigint = BigInt(0);
+    let totalGasPrice: bigint = BigInt(0);
+    let totalUSDGasPrice: number = 0;
+
+    successfulTransactions.forEach((tx) => {
+      // dates
+      const date = new Date(Number.parseInt(tx.timeStamp) * 1000);
+      uniqueDays.add(date.toDateString());
+      uniqueWeeks.add(date.getFullYear() + '-' + dayjs(date).isoWeek());
+      uniqueMonths.add(date.getFullYear() + '-' + date.getMonth());
+
+      transactionDayMap.set(tx.hash, date.toUTCString());
+
+      // recipients
+      if (tx.to) {
+        uniqueContracts.add(tx.to);
+      }
+      if (tx.contractAddress) {
+        deployedContracts.add(tx.contractAddress);
+      }
+
+      // value (money)
+      totalFee += BigInt(tx.fee);
+      totalUSDFee += Number.parseFloat(Web3Utils.fromWei(tx.fee, 'ether')) * ethExchangeRate;
+
+      totalVolume += BigInt(tx.value);
+      totalUSDVolume += Number.parseFloat(Web3Utils.fromWei(tx.value, 'ether')) * ethExchangeRate;
+
+      const transactionTotalGasPrice = BigInt(tx.gasUsed) * BigInt(tx.gasPrice);
+
+      totalGasUsed += BigInt(tx.gasUsed);
+      totalGasPrice += transactionTotalGasPrice;
+      totalUSDGasPrice +=
+        Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * ethExchangeRate;
+    });
+
+    const stat: ITransactionsStat = {
+      txCount: successfulTransactions.length,
+      txDayMap: [...transactionDayMap.entries()],
+      firstTxDate: firstTransaction ? new Date(Number.parseInt(firstTransaction.timeStamp) * 1000) : null,
+      lastTxDate: lastTransaction ? new Date(Number.parseInt(lastTransaction.timeStamp) * 1000) : null,
+      unique: {
+        days: [...uniqueDays],
+        weeks: [...uniqueWeeks],
+        months: [...uniqueMonths],
+        contracts: [...uniqueContracts],
+      },
+      deployedContracts: [...deployedContracts],
+      total: {
+        fee: totalFee.toString(),
+        USDFee: totalUSDFee,
+        volume: totalVolume.toString(),
+        USDVolume: totalUSDVolume,
+        gasUsed: totalGasUsed.toString(),
+        gasPrice: totalGasPrice.toString(),
+        USDGasPrice: totalUSDGasPrice,
+      },
+    };
+
+    return stat;
+  }
+
   // INTERNAL API
   public getIntegrationRecord() {
     return this.integration;
@@ -166,7 +271,7 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
         this.httpService.get<TZkSyncBlockExplorerEthPriceResponse>(this.apiUrl, { params }),
       );
 
-      return data;
+      return data.result;
     } catch (error) {
       throw this.handleErrorResponse(route, params, error);
     }
@@ -301,5 +406,12 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     } catch (error) {
       throw this.handleErrorResponse(route, params, error);
     }
+  }
+
+  public async getTransactionsStat(addressHash: string) {
+    const ethPrice = await this.getEthPrice();
+    const transactions = await this.getAddressTransactions(addressHash);
+
+    return this.buildTransactionsStat(addressHash, transactions, Number.parseFloat(ethPrice.ethusd));
   }
 }

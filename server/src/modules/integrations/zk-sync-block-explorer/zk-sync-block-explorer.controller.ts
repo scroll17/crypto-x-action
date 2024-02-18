@@ -66,6 +66,23 @@ export class ZkSyncBlockExplorerController {
     return this.zkSyncBlockExplorerService.getAddressTransactions(hash);
   }
 
+  @Get('/transactions-stat/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address transactions statistics info in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with transactions stat info by Address.',
+    schema: {
+      type: 'array',
+    },
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getTransactionsStat(@Param('hash') hash: string) {
+    return this.zkSyncBlockExplorerService.getTransactionsStat(hash);
+  }
+
   @Get('/token-balance')
   @DevEndpoint()
   @HttpCode(HttpStatus.OK)
