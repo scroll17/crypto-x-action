@@ -30,7 +30,7 @@
   {
     "key": "zk-sync-block-explorer",
     "name": "ZkSyncBlockExplorer",
-    "apiUrl": "https://block-explorer-api.mainnet.zksync.io",
+    "apiUrl": "https://block-explorer-api.mainnet.zksync.io/api",
     "description": "The service which provide ZkSync Mainnet explorer",
     "active": true
   }

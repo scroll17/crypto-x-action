@@ -1,11 +1,17 @@
 import * as Web3Utils from 'web3-utils';
 import { AxiosError } from 'axios';
+import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
-import { ILineaExplorerGenericResponse } from '@common/integrations/linea-explorer';
+import {
+  IZkSyncBlockExplorerGenericResponse,
+  TZkSyncBlockExplorerEthPriceResponse,
+  ZkSyncBlockExplorerApiActions,
+  ZkSyncBlockExplorerApiModules,
+} from '@common/integrations/zk-sync-block-explorer';
 
 @Injectable()
 export class ZkSyncBlockExplorerService implements OnModuleInit {
@@ -48,12 +54,11 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
   private async initConnection() {
     this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
-    // const date = dayjs().format('YYYY-MM-DD');
-    // const result = await this.getTotalFees(date);
-    //
-    // this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
-    //   stats: result,
-    // });
+    const result = await this.getEthPrice();
+
+    this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
+      stats: result,
+    });
   }
 
   // TOOLS
@@ -92,10 +97,10 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     }
 
     this.logger.error(message, { error });
-    return error;
+    return error
   }
 
-  private validateResponse(route: string, data: ILineaExplorerGenericResponse<unknown>) {
+  private validateResponse(route: string, data: IZkSyncBlockExplorerGenericResponse<unknown>) {
     /**
      *  {
      *   "message": "Invalid address hash",
@@ -124,4 +129,35 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
   }
 
   // EXTERNAL API
+  public async getEthPrice() {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ZkSyncBlockExplorerApiModules.Stats,
+      action: ZkSyncBlockExplorerApiActions.EthPrice,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TZkSyncBlockExplorerEthPriceResponse>(this.apiUrl, { params }),
+      );
+
+      return data;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 }
+
+/**
+ * +1. /api?module=account&action=txlist
+ * +2. /api?module=account&action=balance
+ * +3. /api?module=account&action=balancemulti
+ * +4. /api?module=account&action=tokenbalance
+ * +5. /api?module=stats&action=ethprice
+ * */
