@@ -7,8 +7,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
 import {
-  IZkSyncBlockExplorerGenericResponse, TZkSyncBlockExplorerAccountBalanceResponse,
+  IZkSyncBlockExplorerGenericResponse,
+  TZkSyncBlockExplorerAccountBalanceResponse,
   TZkSyncBlockExplorerEthPriceResponse,
+  TZkSyncBlockExplorerMultiAccountBalanceResponse,
+  TZkSyncBlockExplorerTokenBalanceResponse,
   ZkSyncBlockExplorerApiActions,
   ZkSyncBlockExplorerApiModules,
 } from '@common/integrations/zk-sync-block-explorer';
@@ -48,8 +51,8 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
 
     // TODO
     const address = '0xc1d0c82d463758839ab8adb6e2a976561cae3992';
-    const result = await this.getAddressBalance(address);
-    console.log('result => ', result)
+    const result = await this.getTokenBalance(address, '0x80115c708e12edd42e504c1cd52aea96c547c05c');
+    console.log('result =>', result);
 
     if (this.integration.active) {
       await this.initConnection();
@@ -102,7 +105,7 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     }
 
     this.logger.error(message, { error });
-    return error
+    return error;
   }
 
   private validateResponse(route: string, data: IZkSyncBlockExplorerGenericResponse<unknown>) {
@@ -185,12 +188,67 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       throw this.handleErrorResponse(route, error);
     }
   }
+
+  public async getMultiAddressBalances(addressHashes: string[]) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ZkSyncBlockExplorerApiModules.Account,
+      action: ZkSyncBlockExplorerApiActions.BalanceMulti,
+      address: addressHashes.join(','),
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TZkSyncBlockExplorerMultiAccountBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return data.result;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
+
+  public async getTokenBalance(addressHash: string, contractHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ZkSyncBlockExplorerApiModules.Account,
+      action: ZkSyncBlockExplorerApiActions.TokenBalance,
+      address: addressHash,
+      contractaddress: contractHash,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TZkSyncBlockExplorerTokenBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return {
+        balance: data.result,
+      };
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 }
 
 /**
  * +1. /api?module=account&action=txlist
- * +2. /api?module=account&action=balance
- * +3. /api?module=account&action=balancemulti
+ * ++2. /api?module=account&action=balance
+ * ++3. /api?module=account&action=balancemulti
  * +4. /api?module=account&action=tokenbalance
  * ++5. /api?module=stats&action=ethprice
  * */
