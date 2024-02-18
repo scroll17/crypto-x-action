@@ -80,20 +80,28 @@ export class ScrollBlockScoutService implements OnModuleInit {
     }
   }
 
+  private getRouteFromParams(module: string, action: string) {
+    return `(module=${module} -> action=${action})`;
+  }
+
   private convertParams(params: Record<string, string | number>) {
     return Object.entries(params)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
   }
 
-  private handleErrorResponse(route: string, error: Error | AxiosError) {
+  private handleErrorResponse(
+    route: string,
+    params: Record<string, string | number>,
+    error: Error | AxiosError,
+  ) {
     const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}"`;
 
     if (error instanceof AxiosError) {
       const { response } = error;
 
       if (!response) {
-        this.logger.error(message, { error });
+        this.logger.error(message, { error, params });
         return error;
       }
 
@@ -108,11 +116,15 @@ export class ScrollBlockScoutService implements OnModuleInit {
       );
     }
 
-    this.logger.error(message, { error });
+    this.logger.error(message, { error, params });
     return error;
   }
 
-  private validateResponse(route: string, data: IScrollBlockScoutGenericResponse<unknown>) {
+  private validateResponse(
+    route: string,
+    params: Record<string, string | number>,
+    data: IScrollBlockScoutGenericResponse<unknown>,
+  ) {
     /**
      *  {
      *   "message": "Invalid address hash",
@@ -124,7 +136,7 @@ export class ScrollBlockScoutService implements OnModuleInit {
     if ('status' in data && data.status === '0') {
       const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}" with massage "${data.message}"`;
 
-      this.logger.error(message, { ...data });
+      this.logger.error(message, { response: data, params: params });
       throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
 
@@ -240,15 +252,18 @@ export class ScrollBlockScoutService implements OnModuleInit {
   public async getCoinPrice() {
     this.checkActiveStatus();
 
+    const module = ScrollBlockScoutApiModules.Stats;
+    const action = ScrollBlockScoutApiActions.CoinPrice;
+
     const params = {
-      module: ScrollBlockScoutApiModules.Stats,
-      action: ScrollBlockScoutApiActions.CoinPrice,
+      module,
+      action,
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
@@ -257,125 +272,140 @@ export class ScrollBlockScoutService implements OnModuleInit {
 
       return data;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getTotalFees(date: string = dayjs().format('YYYY-MM-DD')) {
     this.checkActiveStatus();
 
+    const module = ScrollBlockScoutApiModules.Stats;
+    const action = ScrollBlockScoutApiActions.TotalFees;
+
     const params = {
-      module: ScrollBlockScoutApiModules.Stats,
-      action: ScrollBlockScoutApiActions.TotalFees,
+      module,
+      action,
       date: date,
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
         this.httpService.get<TScrollBlockScoutTotalFeesResponse>(this.apiUrl, { params }),
       );
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return data.result;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getAddressBalance(addressHash: string) {
     this.checkActiveStatus();
 
+    const module = ScrollBlockScoutApiModules.Account;
+    const action = ScrollBlockScoutApiActions.Balance;
+
     const params = {
-      module: ScrollBlockScoutApiModules.Account,
-      action: ScrollBlockScoutApiActions.Balance,
+      module,
+      action,
       address: addressHash,
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
         this.httpService.get<TScrollBlockScoutAccountBalanceResponse>(this.apiUrl, { params }),
       );
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return {
         balance: data.result,
       };
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getMultiAddressBalances(addressHashes: string[]) {
     this.checkActiveStatus();
 
+    const module = ScrollBlockScoutApiModules.Account;
+    const action = ScrollBlockScoutApiActions.BalanceMulti;
+
     const params = {
-      module: ScrollBlockScoutApiModules.Account,
-      action: ScrollBlockScoutApiActions.BalanceMulti,
+      module,
+      action,
       address: addressHashes.join(','),
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
         this.httpService.get<TScrollBlockScoutMultiAccountBalanceResponse>(this.apiUrl, { params }),
       );
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return data.result;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getTokenBalance(addressHash: string, contractHash: string) {
     this.checkActiveStatus();
 
+    const module = ScrollBlockScoutApiModules.Account;
+    const action = ScrollBlockScoutApiActions.TokenBalance;
+
     const params = {
-      module: ScrollBlockScoutApiModules.Account,
-      action: ScrollBlockScoutApiActions.TokenBalance,
+      module,
+      action,
       address: addressHash,
       contractaddress: contractHash,
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
         this.httpService.get<TScrollBlockScoutTokenBalanceResponse>(this.apiUrl, { params }),
       );
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return {
         balance: data.result,
       };
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getAddressTransactions(addressHash: string) {
     this.checkActiveStatus();
 
+    const module = ScrollBlockScoutApiModules.Account;
+    const action = ScrollBlockScoutApiActions.TXList;
+
     const params = {
-      module: ScrollBlockScoutApiModules.Account,
-      action: ScrollBlockScoutApiActions.TXList,
+      module,
+      action,
       address: addressHash,
       page: 1,
       offset: 1000,
@@ -384,11 +414,11 @@ export class ScrollBlockScoutService implements OnModuleInit {
        *   the maximum number of records to return when paginating. 'page' must be provided in conjunction.
        * */
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
@@ -398,11 +428,11 @@ export class ScrollBlockScoutService implements OnModuleInit {
         return data.result;
       }
 
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return data.result;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
