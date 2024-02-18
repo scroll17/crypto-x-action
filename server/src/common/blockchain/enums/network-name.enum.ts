@@ -1,5 +1,7 @@
 export enum BlockchainNetworkName {
   Ethereum = 'ethereum',
-  zkSync = 'zkSync',
-  StarkNet = 'starknet',
+  Base = 'base',
+  Scroll = 'scroll',
+  Linea = 'linea',
+  ZkSync = 'zkSync',
 }

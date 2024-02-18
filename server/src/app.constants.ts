@@ -1,4 +1,6 @@
 import * as path from 'node:path';
+import { BlockchainNetworkName } from '@common/blockchain/enums';
+import { IntegrationNames } from '@common/integrations/common';
 
 export namespace AppConstants {
   export namespace Env {
@@ -15,6 +17,14 @@ export namespace AppConstants {
   }
 
   export namespace Integration {
+    export const WALLET_CHECKER_INTEGRATIONS: Record<BlockchainNetworkName, IntegrationNames | null> = {
+      [BlockchainNetworkName.Ethereum]: null,
+      [BlockchainNetworkName.Base]: IntegrationNames.BaseBlockScout,
+      [BlockchainNetworkName.Scroll]: IntegrationNames.ScrollBlockScout,
+      [BlockchainNetworkName.Linea]: IntegrationNames.LineaExplorer,
+      [BlockchainNetworkName.ZkSync]: IntegrationNames.ZkSyncBlockExplorer,
+    };
+
     export namespace Scroll {
       export const COIN_CONTRACTS = {
         USDC: {
