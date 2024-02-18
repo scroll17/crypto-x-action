@@ -9,6 +9,7 @@ import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/int
 import {
   IZkSyncBlockExplorerGenericResponse,
   TZkSyncBlockExplorerAccountBalanceResponse,
+  TZkSyncBlockExplorerAccountTransactionsResponse,
   TZkSyncBlockExplorerEthPriceResponse,
   TZkSyncBlockExplorerMultiAccountBalanceResponse,
   TZkSyncBlockExplorerTokenBalanceResponse,
@@ -48,11 +49,6 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       active: integration.active,
       apiUrl: integration.apiUrl,
     });
-
-    // TODO
-    const address = '0xc1d0c82d463758839ab8adb6e2a976561cae3992';
-    const result = await this.getTokenBalance(address, '0x80115c708e12edd42e504c1cd52aea96c547c05c');
-    console.log('result =>', result);
 
     if (this.integration.active) {
       await this.initConnection();
@@ -243,12 +239,48 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       throw this.handleErrorResponse(route, error);
     }
   }
+
+  public async getAddressTransactions(addressHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ZkSyncBlockExplorerApiModules.Account,
+      action: ZkSyncBlockExplorerApiActions.TXList,
+      address: addressHash,
+      page: 1,
+      offset: 1000,
+      /**
+       *   A nonnegative integer that represents
+       *   the maximum number of records to return when paginating. 'page' must be provided in conjunction.
+       * */
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TZkSyncBlockExplorerAccountTransactionsResponse>(this.apiUrl, { params }),
+      );
+      if (data.result.length === 0) {
+        return data.result;
+      }
+
+      this.validateResponse(route, data);
+
+      return data.result;
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 }
 
 /**
  * +1. /api?module=account&action=txlist
  * ++2. /api?module=account&action=balance
  * ++3. /api?module=account&action=balancemulti
- * +4. /api?module=account&action=tokenbalance
+ * ++4. /api?module=account&action=tokenbalance
  * ++5. /api?module=stats&action=ethprice
  * */
