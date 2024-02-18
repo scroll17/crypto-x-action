@@ -18,7 +18,7 @@ import {
   TBaseBlockScoutTokenBalancesResponse,
   TBaseBlockScoutTransactionsResponse,
 } from '@common/integrations/base-block-scout';
-import { ITransactionsStat } from '@common/integrations/common/types/transactions-stat.interface';
+import { ITransactionsStat } from '@common/integrations/common';
 
 dayjs.extend(isoWeek);
 

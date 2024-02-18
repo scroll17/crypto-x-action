@@ -19,7 +19,7 @@ import {
   TLineaExplorerTokenBalanceResponse,
   TLineaExplorerTotalFeesResponse,
 } from '@common/integrations/linea-explorer';
-import { ITransactionsStat } from '@common/integrations/common/types/transactions-stat.interface';
+import { ITransactionsStat } from '@common/integrations/common';
 
 @Injectable()
 export class LineaExplorerService implements OnModuleInit {

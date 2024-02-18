@@ -20,7 +20,7 @@ import {
   TScrollBlockScoutAccountTransactionsResponse,
   IScrollBlockScoutAccountTransactionsData,
 } from '@common/integrations/scroll-block-scout';
-import { ITransactionsStat } from '@common/integrations/common/types/transactions-stat.interface';
+import { ITransactionsStat } from '@common/integrations/common';
 
 dayjs.extend(isoWeek);
 
