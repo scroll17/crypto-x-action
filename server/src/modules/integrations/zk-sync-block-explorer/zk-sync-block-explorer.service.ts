@@ -7,7 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
 import {
-  IZkSyncBlockExplorerGenericResponse,
+  IZkSyncBlockExplorerGenericResponse, TZkSyncBlockExplorerAccountBalanceResponse,
   TZkSyncBlockExplorerEthPriceResponse,
   ZkSyncBlockExplorerApiActions,
   ZkSyncBlockExplorerApiModules,
@@ -45,6 +45,11 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       active: integration.active,
       apiUrl: integration.apiUrl,
     });
+
+    // TODO
+    const address = '0xc1d0c82d463758839ab8adb6e2a976561cae3992';
+    const result = await this.getAddressBalance(address);
+    console.log('result => ', result)
 
     if (this.integration.active) {
       await this.initConnection();
@@ -152,6 +157,34 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       throw this.handleErrorResponse(route, error);
     }
   }
+
+  public async getAddressBalance(addressHash: string) {
+    this.checkActiveStatus();
+
+    const params = {
+      module: ZkSyncBlockExplorerApiModules.Account,
+      action: ZkSyncBlockExplorerApiActions.Balance,
+      address: addressHash,
+    };
+    const route = `?${this.convertParams(params)}`;
+
+    try {
+      this.logger.debug(`Request to "${route}" endpoint`, {
+        endpoint: route,
+      });
+
+      const { data } = await firstValueFrom(
+        this.httpService.get<TZkSyncBlockExplorerAccountBalanceResponse>(this.apiUrl, { params }),
+      );
+      this.validateResponse(route, data);
+
+      return {
+        balance: data.result,
+      };
+    } catch (error) {
+      throw this.handleErrorResponse(route, error);
+    }
+  }
 }
 
 /**
@@ -159,5 +192,5 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
  * +2. /api?module=account&action=balance
  * +3. /api?module=account&action=balancemulti
  * +4. /api?module=account&action=tokenbalance
- * +5. /api?module=stats&action=ethprice
+ * ++5. /api?module=stats&action=ethprice
  * */
