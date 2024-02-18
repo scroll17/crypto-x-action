@@ -72,20 +72,28 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     }
   }
 
+  private getRouteFromParams(module: string, action: string) {
+    return `(module=${module} -> action=${action})`;
+  }
+
   private convertParams(params: Record<string, string | number>) {
     return Object.entries(params)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
   }
 
-  private handleErrorResponse(route: string, error: Error | AxiosError) {
+  private handleErrorResponse(
+    route: string,
+    params: Record<string, string | number>,
+    error: Error | AxiosError,
+  ) {
     const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}"`;
 
     if (error instanceof AxiosError) {
       const { response } = error;
 
       if (!response) {
-        this.logger.error(message, { error });
+        this.logger.error(message, { error, params });
         return error;
       }
 
@@ -100,11 +108,15 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       );
     }
 
-    this.logger.error(message, { error });
+    this.logger.error(message, { error, params });
     return error;
   }
 
-  private validateResponse(route: string, data: IZkSyncBlockExplorerGenericResponse<unknown>) {
+  private validateResponse(
+    route: string,
+    params: Record<string, string | number>,
+    data: IZkSyncBlockExplorerGenericResponse<unknown>,
+  ) {
     /**
      *  {
      *   "message": "Invalid address hash",
@@ -116,7 +128,7 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     if ('status' in data && data.status === '0') {
       const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}" with massage "${data.message}"`;
 
-      this.logger.error(message, { ...data });
+      this.logger.error(message, { response: data, params: params });
       throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
 
@@ -136,15 +148,18 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
   public async getEthPrice() {
     this.checkActiveStatus();
 
+    const module = ZkSyncBlockExplorerApiModules.Stats;
+    const action = ZkSyncBlockExplorerApiActions.EthPrice;
+
     const params = {
-      module: ZkSyncBlockExplorerApiModules.Stats,
-      action: ZkSyncBlockExplorerApiActions.EthPrice,
+      module,
+      action,
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
@@ -153,99 +168,111 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
 
       return data;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getAddressBalance(addressHash: string) {
     this.checkActiveStatus();
 
+    const module = ZkSyncBlockExplorerApiModules.Account;
+    const action = ZkSyncBlockExplorerApiActions.Balance;
+
     const params = {
-      module: ZkSyncBlockExplorerApiModules.Account,
-      action: ZkSyncBlockExplorerApiActions.Balance,
+      module,
+      action,
       address: addressHash,
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
         this.httpService.get<TZkSyncBlockExplorerAccountBalanceResponse>(this.apiUrl, { params }),
       );
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return {
         balance: data.result,
       };
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getMultiAddressBalances(addressHashes: string[]) {
     this.checkActiveStatus();
 
+    const module = ZkSyncBlockExplorerApiModules.Account;
+    const action = ZkSyncBlockExplorerApiActions.BalanceMulti;
+
     const params = {
-      module: ZkSyncBlockExplorerApiModules.Account,
-      action: ZkSyncBlockExplorerApiActions.BalanceMulti,
+      module,
+      action,
       address: addressHashes.join(','),
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
         this.httpService.get<TZkSyncBlockExplorerMultiAccountBalanceResponse>(this.apiUrl, { params }),
       );
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return data.result;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getTokenBalance(addressHash: string, contractHash: string) {
     this.checkActiveStatus();
 
+    const module = ZkSyncBlockExplorerApiModules.Account;
+    const action = ZkSyncBlockExplorerApiActions.TokenBalance;
+
     const params = {
-      module: ZkSyncBlockExplorerApiModules.Account,
-      action: ZkSyncBlockExplorerApiActions.TokenBalance,
+      module,
+      action,
       address: addressHash,
       contractaddress: contractHash,
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
         this.httpService.get<TZkSyncBlockExplorerTokenBalanceResponse>(this.apiUrl, { params }),
       );
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return {
         balance: data.result,
       };
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 
   public async getAddressTransactions(addressHash: string) {
     this.checkActiveStatus();
 
+    const module = ZkSyncBlockExplorerApiModules.Account;
+    const action = ZkSyncBlockExplorerApiActions.TXList;
+
     const params = {
-      module: ZkSyncBlockExplorerApiModules.Account,
-      action: ZkSyncBlockExplorerApiActions.TXList,
+      module,
+      action,
       address: addressHash,
       page: 1,
       offset: 1000,
@@ -254,11 +281,11 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
        *   the maximum number of records to return when paginating. 'page' must be provided in conjunction.
        * */
     };
-    const route = `?${this.convertParams(params)}`;
+    const route = this.getRouteFromParams(module, action);
 
     try {
       this.logger.debug(`Request to "${route}" endpoint`, {
-        endpoint: route,
+        params,
       });
 
       const { data } = await firstValueFrom(
@@ -268,19 +295,11 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
         return data.result;
       }
 
-      this.validateResponse(route, data);
+      this.validateResponse(route, params, data);
 
       return data.result;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, params, error);
     }
   }
 }
-
-/**
- * +1. /api?module=account&action=txlist
- * ++2. /api?module=account&action=balance
- * ++3. /api?module=account&action=balancemulti
- * ++4. /api?module=account&action=tokenbalance
- * ++5. /api?module=stats&action=ethprice
- * */
