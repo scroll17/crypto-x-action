@@ -53,10 +53,6 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       apiUrl: integration.apiUrl,
     });
 
-    const address = '0xc1d0c82d463758839ab8adb6e2a976561cae3992';
-    const stat = await this.getTransactionsStat(address);
-    console.log('stat =>', stat);
-
     if (this.integration.active) {
       await this.initConnection();
     }
