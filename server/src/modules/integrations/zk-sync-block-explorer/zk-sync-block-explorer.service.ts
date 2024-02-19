@@ -2,11 +2,11 @@ import * as Web3Utils from 'web3-utils';
 import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { firstValueFrom } from 'rxjs';
-import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
-import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
+import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   IZkSyncBlockExplorerAccountTransactionsData,
   IZkSyncBlockExplorerGenericResponse,
@@ -19,22 +19,21 @@ import {
   ZkSyncBlockExplorerApiModules,
 } from '@common/integrations/zk-sync-block-explorer';
 import { ITransactionsStat } from '@common/integrations/common';
+import { AbstractBlockchainExplorerIntegration } from '../_utils/abstract-blockchain-explorer-integration';
 
 @Injectable()
-export class ZkSyncBlockExplorerService implements OnModuleInit {
-  private readonly INTEGRATION_KEY = IntegrationNames.ZkSyncBlockExplorer;
-
-  private readonly logger = new Logger(this.constructor.name);
-
-  private apiUrl: string;
-  private integration: IntegrationDocument;
+export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegration {
+  protected readonly INTEGRATION_KEY = IntegrationNames.ZkSyncBlockExplorer;
+  protected readonly logger = new Logger(this.constructor.name);
 
   constructor(
     private readonly httpService: HttpService,
     @InjectModel(Integration.name) private readonly integrationModel: IntegrationModel,
-  ) {}
+  ) {
+    super();
+  }
 
-  public async onModuleInit() {
+  public override async onModuleInit() {
     this.logger.debug(`Load integration record by key: "${this.INTEGRATION_KEY}"`, {
       key: this.INTEGRATION_KEY,
     });
@@ -58,7 +57,7 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     }
   }
 
-  private async initConnection() {
+  protected override async initConnection() {
     this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
     const result = await this.getEthPrice();
@@ -69,20 +68,8 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
   }
 
   // TOOLS
-  private checkActiveStatus() {
-    if (!this.integration.active) {
-      throw new HttpException(`Integration "${this.INTEGRATION_KEY}" is not active`, HttpStatus.BAD_REQUEST);
-    }
-  }
-
   private getRouteFromParams(module: string, action: string) {
     return `(module=${module} -> action=${action})`;
-  }
-
-  private convertParams(params: Record<string, string | number>) {
-    return Object.entries(params)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('&');
   }
 
   private handleErrorResponse(
@@ -138,10 +125,11 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     return;
   }
 
-  public buildTransactionsStat(
+  // INTERNAL API
+  public override buildTransactionsStat(
     addressHash: string,
     transactions: IZkSyncBlockExplorerAccountTransactionsData[],
-    ethExchangeRate: number,
+    ethPrice: number,
   ) {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
@@ -196,18 +184,20 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
       }
 
       // value (money)
+      const exchangeRate = ethPrice;
+
       totalFee += BigInt(tx.fee);
-      totalUSDFee += Number.parseFloat(Web3Utils.fromWei(tx.fee, 'ether')) * ethExchangeRate;
+      totalUSDFee += Number.parseFloat(Web3Utils.fromWei(tx.fee, 'ether')) * exchangeRate;
 
       totalVolume += BigInt(tx.value);
-      totalUSDVolume += Number.parseFloat(Web3Utils.fromWei(tx.value, 'ether')) * ethExchangeRate;
+      totalUSDVolume += Number.parseFloat(Web3Utils.fromWei(tx.value, 'ether')) * exchangeRate;
 
       const transactionTotalGasPrice = BigInt(tx.gasUsed) * BigInt(tx.gasPrice);
 
       totalGasUsed += BigInt(tx.gasUsed);
       totalGasPrice += transactionTotalGasPrice;
       totalUSDGasPrice +=
-        Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * ethExchangeRate;
+        Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * exchangeRate;
     });
 
     const stat: ITransactionsStat = {
@@ -234,15 +224,6 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     };
 
     return stat;
-  }
-
-  // INTERNAL API
-  public getIntegrationRecord() {
-    return this.integration;
-  }
-
-  public convertAddressBalance(weiBalance: string, unit: Web3Utils.EtherUnits) {
-    return Web3Utils.fromWei(weiBalance, unit);
   }
 
   // EXTERNAL API
@@ -404,10 +385,14 @@ export class ZkSyncBlockExplorerService implements OnModuleInit {
     }
   }
 
-  public async getTransactionsStat(addressHash: string) {
-    const ethPrice = await this.getEthPrice();
-    const transactions = await this.getAddressTransactions(addressHash);
+  public override async getTransactionsStat(addressHash: string, ethPrice?: number) {
+    let price = ethPrice;
+    if (!price) {
+      const ethPrice = await this.getEthPrice();
+      price = Number.parseFloat(ethPrice.ethusd);
+    }
 
-    return this.buildTransactionsStat(addressHash, transactions, Number.parseFloat(ethPrice.ethusd));
+    const transactions = await this.getAddressTransactions(addressHash);
+    return this.buildTransactionsStat(addressHash, transactions, price);
   }
 }

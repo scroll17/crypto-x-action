@@ -3,40 +3,38 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import * as Web3Utils from 'web3-utils';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
-import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
+import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   BaseBlockScoutApiRoutes,
   IBaseBlockScoutTransaction,
   IBaseBlockScoutTransactionsPaginate,
-  IBaseBlockScoutWalletAddressData,
   TBaseBlockScoutAddressResponse,
   TBaseBlockScoutStatsResponse,
   TBaseBlockScoutTokenBalancesResponse,
   TBaseBlockScoutTransactionsResponse,
 } from '@common/integrations/base-block-scout';
 import { ITransactionsStat } from '@common/integrations/common';
+import { AbstractBlockchainExplorerIntegration } from '../_utils/abstract-blockchain-explorer-integration';
 
 dayjs.extend(isoWeek);
 
 @Injectable()
-export class BaseBlockScoutService implements OnModuleInit {
-  private readonly INTEGRATION_KEY = IntegrationNames.BaseBlockScout;
-
-  private readonly logger = new Logger(this.constructor.name);
-
-  private apiUrl: string;
-  private integration: IntegrationDocument;
+export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration {
+  protected readonly INTEGRATION_KEY = IntegrationNames.BaseBlockScout;
+  protected readonly logger = new Logger(this.constructor.name);
 
   constructor(
     private readonly httpService: HttpService,
     @InjectModel(Integration.name) private readonly integrationModel: IntegrationModel,
-  ) {}
+  ) {
+    super();
+  }
 
-  public async onModuleInit() {
+  public override async onModuleInit() {
     this.logger.debug(`Load integration record by key: "${this.INTEGRATION_KEY}"`, {
       key: this.INTEGRATION_KEY,
     });
@@ -60,7 +58,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     }
   }
 
-  private async initConnection() {
+  protected override async initConnection() {
     this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
     const result = await this.getStats();
@@ -71,12 +69,6 @@ export class BaseBlockScoutService implements OnModuleInit {
   }
 
   // TOOLS
-  private checkActiveStatus() {
-    if (!this.integration.active) {
-      throw new HttpException(`Integration "${this.INTEGRATION_KEY}" is not active`, HttpStatus.BAD_REQUEST);
-    }
-  }
-
   private handleErrorResponse(route: string, error: Error | AxiosError) {
     const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}"`;
 
@@ -104,18 +96,11 @@ export class BaseBlockScoutService implements OnModuleInit {
   }
 
   // INTERNAL API
-  public getIntegrationRecord() {
-    return this.integration;
-  }
-
-  public getAddressBalance(
-    address: Pick<IBaseBlockScoutWalletAddressData, 'coin_balance'>,
-    unit: Web3Utils.EtherUnits,
+  public override buildTransactionsStat(
+    addressHash: string,
+    transactions: IBaseBlockScoutTransaction[],
+    ethPrice?: number,
   ) {
-    return Web3Utils.fromWei(address.coin_balance, unit);
-  }
-
-  public buildTransactionsStat(addressHash: string, transactions: IBaseBlockScoutTransaction[]) {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.hash.toLowerCase() === addressHash.toLowerCase();
       const isSuccessful = t.result === 'success';
@@ -310,7 +295,7 @@ export class BaseBlockScoutService implements OnModuleInit {
     return transactions;
   }
 
-  public async getTransactionsStat(addressHash: string) {
+  public override async getTransactionsStat(addressHash: string, ethPrice: number) {
     const transactions = await this.getAllAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions);
   }

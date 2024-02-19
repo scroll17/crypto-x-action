@@ -7,7 +7,7 @@ import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@ne
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { IntegrationNames } from '@common/integrations/common';
-import { Integration, IntegrationDocument, IntegrationModel } from '@schemas/integration';
+import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   ScrollBlockScoutApiActions,
   ScrollBlockScoutApiModules,
@@ -21,24 +21,23 @@ import {
   IScrollBlockScoutAccountTransactionsData,
 } from '@common/integrations/scroll-block-scout';
 import { ITransactionsStat } from '@common/integrations/common';
+import { AbstractBlockchainExplorerIntegration } from '../_utils/abstract-blockchain-explorer-integration';
 
 dayjs.extend(isoWeek);
 
 @Injectable()
-export class ScrollBlockScoutService implements OnModuleInit {
-  private readonly INTEGRATION_KEY = IntegrationNames.ScrollBlockScout;
-
-  private readonly logger = new Logger(this.constructor.name);
-
-  private apiUrl: string;
-  private integration: IntegrationDocument;
+export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegration {
+  protected readonly INTEGRATION_KEY = IntegrationNames.ScrollBlockScout;
+  protected readonly logger = new Logger(this.constructor.name);
 
   constructor(
     private readonly httpService: HttpService,
     @InjectModel(Integration.name) private readonly integrationModel: IntegrationModel,
-  ) {}
+  ) {
+    super();
+  }
 
-  public async onModuleInit() {
+  public override async onModuleInit() {
     this.logger.debug(`Load integration record by key: "${this.INTEGRATION_KEY}"`, {
       key: this.INTEGRATION_KEY,
     });
@@ -62,7 +61,7 @@ export class ScrollBlockScoutService implements OnModuleInit {
     }
   }
 
-  private async initConnection() {
+  protected override async initConnection() {
     this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
     const date = dayjs().format('YYYY-MM-DD');
@@ -74,20 +73,8 @@ export class ScrollBlockScoutService implements OnModuleInit {
   }
 
   // TOOLS
-  private checkActiveStatus() {
-    if (!this.integration.active) {
-      throw new HttpException(`Integration "${this.INTEGRATION_KEY}" is not active`, HttpStatus.BAD_REQUEST);
-    }
-  }
-
   private getRouteFromParams(module: string, action: string) {
     return `(module=${module} -> action=${action})`;
-  }
-
-  private convertParams(params: Record<string, string | number>) {
-    return Object.entries(params)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('&');
   }
 
   private handleErrorResponse(
@@ -144,18 +131,10 @@ export class ScrollBlockScoutService implements OnModuleInit {
   }
 
   // INTERNAL API
-  public getIntegrationRecord() {
-    return this.integration;
-  }
-
-  public convertAddressBalance(weiBalance: string, unit: Web3Utils.EtherUnits) {
-    return Web3Utils.fromWei(weiBalance, unit);
-  }
-
-  public buildTransactionsStat(
+  public override buildTransactionsStat(
     addressHash: string,
     transactions: IScrollBlockScoutAccountTransactionsData[],
-    exchangeRate: number,
+    ethPrice: number,
   ) {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
@@ -208,6 +187,8 @@ export class ScrollBlockScoutService implements OnModuleInit {
       }
 
       // value (money)
+      const exchangeRate = ethPrice;
+
       totalFee += BigInt(0);
       totalUSDFee += 0;
 
@@ -436,7 +417,7 @@ export class ScrollBlockScoutService implements OnModuleInit {
     }
   }
 
-  public async getTransactionsStat(addressHash: string, ethPrice: number) {
+  public override async getTransactionsStat(addressHash: string, ethPrice: number) {
     const transactions = await this.getAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions, ethPrice);
   }
