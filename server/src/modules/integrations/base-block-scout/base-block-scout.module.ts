@@ -19,5 +19,6 @@ import { Integration, IntegrationSchema } from '@schemas/integration';
   ],
   providers: [BaseBlockScoutService],
   controllers: [BaseBlockScoutController],
+  exports: [BaseBlockScoutService],
 })
 export class BaseBlockScoutModule {}

@@ -11,5 +11,6 @@ import { DebankController } from './debank.controller';
   ],
   providers: [DebankService],
   controllers: [DebankController],
+  exports: [DebankService],
 })
 export class DebankModule {}

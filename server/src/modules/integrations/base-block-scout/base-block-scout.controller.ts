@@ -90,6 +90,6 @@ export class BaseBlockScoutController {
   @ApiParam({ name: 'hash', type: String })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getTransactionsStat(@Param('hash') hash: string) {
-    return this.baseBlockScoutService.getTransactionsStat(hash);
+    return this.baseBlockScoutService.getTransactionsStat(hash, 0);
   }
 }

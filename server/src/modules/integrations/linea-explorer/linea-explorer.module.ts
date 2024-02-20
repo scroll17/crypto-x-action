@@ -19,5 +19,6 @@ import { Integration, IntegrationSchema } from '@schemas/integration';
   ],
   providers: [LineaExplorerService],
   controllers: [LineaExplorerController],
+  exports: [LineaExplorerService],
 })
 export class LineaExplorerModule {}

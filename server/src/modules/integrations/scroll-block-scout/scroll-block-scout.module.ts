@@ -19,5 +19,6 @@ import { Integration, IntegrationSchema } from '@schemas/integration';
   ],
   providers: [ScrollBlockScoutService],
   controllers: [ScrollBlockScoutController],
+  exports: [ScrollBlockScoutService],
 })
 export class ScrollBlockScoutModule {}

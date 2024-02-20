@@ -19,5 +19,6 @@ import { Integration, IntegrationSchema } from '@schemas/integration';
   ],
   providers: [CryptoCompareService],
   controllers: [CryptoCompareController],
+  exports: [CryptoCompareService],
 })
 export class CryptoCompareModule {}

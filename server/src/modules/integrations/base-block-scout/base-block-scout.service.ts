@@ -299,4 +299,11 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     const transactions = await this.getAllAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions);
   }
+
+  public async getAddressReport(addressHash: string, ethPrice: number) {
+    const address = await this.getAddress(addressHash);
+    const balance = this.convertAddressBalance(address.coin_balance, 'ether');
+
+
+  }
 }

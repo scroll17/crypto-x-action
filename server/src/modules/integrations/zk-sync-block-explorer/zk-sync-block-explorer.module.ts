@@ -19,5 +19,6 @@ import { Integration, IntegrationSchema } from '@schemas/integration';
   ],
   providers: [ZkSyncBlockExplorerService],
   controllers: [ZkSyncBlockExplorerController],
+  exports: [ZkSyncBlockExplorerService],
 })
 export class ZkSyncBlockExplorerModule {}
