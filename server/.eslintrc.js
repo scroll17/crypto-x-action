@@ -35,6 +35,7 @@ module.exports = {
     'unicorn/prefer-top-level-await': 'off',
     'unicorn/no-array-for-each': 'off',
     'unicorn/no-null': 'off',
+    'unicorn/consistent-destructuring': 'off',
     'unicorn/no-array-reduce': 'warn',
     'max-len': [
       'error',
