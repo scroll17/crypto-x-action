@@ -69,14 +69,14 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
   }
 
   // TOOLS
-  private handleErrorResponse(route: string, error: Error | AxiosError) {
+  private handleErrorResponse(route: string, params: Record<string, unknown>, error: Error | AxiosError) {
     const message = `Error during execution "${route}" of Integration - "${this.INTEGRATION_KEY}"`;
 
     if (error instanceof AxiosError) {
       const { response } = error;
 
       if (!response) {
-        this.logger.error(message, { error });
+        this.logger.error(message, { error, params });
         return error;
       }
 
@@ -84,6 +84,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
         status: response.status,
         statusText: response.statusText,
         data: response.data,
+        params: params
       });
       return new HttpException(
         message + ` ([status=${response.status}] [text=${response.statusText}])`,
@@ -91,7 +92,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
       );
     }
 
-    this.logger.error(message, { error });
+    this.logger.error(message, { error, params });
     return error;
   }
 
@@ -206,7 +207,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
 
       return data;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, {}, error);
     }
   }
 
@@ -224,7 +225,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
 
       return data;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, { addressHash }, error);
     }
   }
 
@@ -244,7 +245,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
 
       return data;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, { addressHash }, error);
     }
   }
 
@@ -269,7 +270,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
 
       return data;
     } catch (error) {
-      throw this.handleErrorResponse(route, error);
+      throw this.handleErrorResponse(route, { addressHash, params }, error);
     }
   }
 
