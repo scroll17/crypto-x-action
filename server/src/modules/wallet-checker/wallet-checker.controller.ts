@@ -1,7 +1,8 @@
-import { Controller, Get, HttpCode, HttpStatus, ParseBoolPipe, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, ParseBoolPipe, Post, Query } from '@nestjs/common';
 import { ApiForbiddenResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletCheckerService } from './wallet-checker.service';
 import { AuthUser } from '@common/decorators';
+import { GetTransactionsReportDto } from './dto';
 
 @Controller('wallet-checker')
 @ApiTags('WalletChecker')
@@ -25,5 +26,19 @@ export class WalletCheckerController {
   })
   async getNetworks(@Query('onlyActive', ParseBoolPipe) onlyActive: boolean) {
     return this.walletCheckerService.getNetworks(onlyActive);
+  }
+
+  @Post('/transactions-report')
+  @HttpCode(HttpStatus.OK)
+  @AuthUser()
+  @ApiOperation({ summary: 'Get Transactions report by Multiple Addresses in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object Transactions report by Multiple Addresses.',
+    type: [String], // TODO
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getMultipleAddressesReport(@Body() dto: GetTransactionsReportDto) {
+    return this.walletCheckerService.buildTransactionsReport(dto.network, dto.addresses);
   }
 }

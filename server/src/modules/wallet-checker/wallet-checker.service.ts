@@ -1,19 +1,54 @@
 import * as _ from 'lodash';
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import { AppConstants } from '../../app.constants';
 import { BlockchainNetworkName } from '@common/blockchain/enums';
+import { IntegrationNames } from '@common/integrations/common';
+import { BaseBlockScoutService } from '@integrations/base-block-scout/base-block-scout.service';
+import { ScrollBlockScoutService } from '@integrations/scroll-block-scout/scroll-block-scout.service';
+import { LineaExplorerService } from '@integrations/linea-explorer/linea-explorer.service';
+import { ZkSyncBlockExplorerService } from '@integrations/zk-sync-block-explorer/zk-sync-block-explorer.service';
+import { CryptoCompareService } from '@integrations/crypto-compare/crypto-compare.service';
+import { AbstractBlockchainExplorerIntegration } from '@integrations/_utils/abstract-blockchain-explorer-integration';
+
+type TIntegrationServices =
+  | BaseBlockScoutService
+  | ScrollBlockScoutService
+  | LineaExplorerService
+  | ZkSyncBlockExplorerService;
+
+// TODO: rename to wallet-inspector
 
 @Injectable()
 export class WalletCheckerService {
   private readonly logger = new Logger(this.constructor.name);
 
+  private readonly INTEGRATIONS_NETWORK_MAP = new Map(
+    Object.entries(_.invert(AppConstants.Integration.WALLET_CHECKER_INTEGRATIONS)).filter(([key]) =>
+      Boolean(key),
+    ),
+  );
+  private readonly INTEGRATION_SERVICES_MAP = new Map<IntegrationNames, TIntegrationServices>();
+
   constructor(
     private readonly configService: ConfigService,
+    private readonly cryptoCompareService: CryptoCompareService,
+    private readonly baseBlockScoutService: BaseBlockScoutService,
+    private readonly scrollBlockScoutService: ScrollBlockScoutService,
+    private readonly lineaExplorerService: LineaExplorerService,
+    private readonly zkSyncBlockExplorerService: ZkSyncBlockExplorerService,
     @InjectModel(Integration.name) private readonly integrationModel: IntegrationModel,
-  ) {}
+  ) {
+    const integrationsMap: Array<[IntegrationNames, TIntegrationServices]> = [
+      [IntegrationNames.BaseBlockScout, this.baseBlockScoutService],
+      [IntegrationNames.ScrollBlockScout, this.scrollBlockScoutService],
+      [IntegrationNames.LineaExplorer, this.lineaExplorerService],
+      [IntegrationNames.ZkSyncBlockExplorer, this.zkSyncBlockExplorerService],
+    ];
+    integrationsMap.map(([name, service]) => this.INTEGRATION_SERVICES_MAP.set(name, service));
+  }
 
   public async getNetworks(onlyActive = true) {
     this.logger.debug('Get all available networks', {
@@ -36,13 +71,28 @@ export class WalletCheckerService {
       count: integrations.length,
     });
 
-    const integrationNetworkMap = new Map(
-      Object.entries(_.invert(AppConstants.Integration.WALLET_CHECKER_INTEGRATIONS)).filter(([key]) =>
-        Boolean(key),
-      ),
-    );
-
-    const networks = integrations.map((i) => integrationNetworkMap.get(i.key)).filter(Boolean);
+    const networks = integrations.map((i) => this.INTEGRATIONS_NETWORK_MAP.get(i.key)).filter(Boolean);
     return networks as BlockchainNetworkName[];
+  }
+
+  public async buildTransactionsReport(network: BlockchainNetworkName, addresses: string[]) {
+    const integrationName = AppConstants.Integration.WALLET_CHECKER_INTEGRATIONS[network];
+    if (!integrationName) {
+      throw new HttpException('Integration by Network not implemented', HttpStatus.BAD_REQUEST);
+    }
+
+    const integrationService = this.INTEGRATION_SERVICES_MAP.get(
+      integrationName,
+    ) as AbstractBlockchainExplorerIntegration;
+    if (!integrationService) {
+      throw new HttpException('Integration by Network not available', HttpStatus.BAD_REQUEST);
+    }
+
+    const ethPrice = await this.cryptoCompareService.getPrice('ETH', 'USD', false);
+    if (!ethPrice) {
+      throw new HttpException('Cannot load ETH price', HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    return await integrationService.getMultipleAddressesReport(addresses, ethPrice);
   }
 }
