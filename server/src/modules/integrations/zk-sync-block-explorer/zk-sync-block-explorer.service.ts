@@ -5,7 +5,11 @@ import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { IBlockchainExplorerAddressReport, IntegrationNames } from '@common/integrations/common';
+import {
+  IBlockchainExplorerAddressReport,
+  IBlockchainExplorerMultipleAddressesReport,
+  IntegrationNames,
+} from '@common/integrations/common';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   IZkSyncBlockExplorerAccountTransactionsData,
@@ -417,5 +421,39 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
       transactionsStat,
       ethBalance: balance,
     });
+  }
+
+  // public override async getMultipleAddressesReport(
+  public async getMultipleAddressesReport(
+    addressHashes: string[],
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerMultipleAddressesReport> {
+    const addressesBalance = await this.getMultiAddressBalances(addressHashes);
+    const addressesBalanceMap = new Map(addressesBalance.map((v) => [v.account, v.balance]));
+
+    const loaders = addressHashes
+      .filter((address) => addressesBalanceMap.has(address))
+      .map((address) => async () => {
+        const weiBalance = addressesBalanceMap.get(address)!;
+        const balance = this.convertAddressBalance(weiBalance, 'ether');
+
+        const transactions = await this.getAddressTransactions(address);
+        const transactionsStat = this.buildTransactionsStat(address, transactions, ethPrice);
+
+        return this.buildAddressReport({
+          addressHash: address,
+          ethPrice,
+          transactionsStat,
+          ethBalance: balance,
+        });
+      });
+
+    const reports = await this.batchLoader<IBlockchainExplorerAddressReport>(
+      loaders,
+      this.DEFAULT_BATCH_SIZE,
+      this.DEFAULT_SLEEP_AFTER_BATCH_LOAD,
+    );
+
+    return this.buildMultipleAddressesReport(reports);
   }
 }

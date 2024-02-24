@@ -1,4 +1,14 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, ParseFloatPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseFloatPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -10,6 +20,7 @@ import {
 import { ZkSyncBlockExplorerService } from './zk-sync-block-explorer.service';
 import { IntegrationNames } from '@common/integrations/common';
 import { DevEndpoint } from '@common/decorators';
+import { MultipleAddressesReportDto } from './dto/multiple-addresses-report.dto';
 
 @Controller(`integrations/${IntegrationNames.ZkSyncBlockExplorer}`)
 @ApiTags(`Integrations: "${IntegrationNames.ZkSyncBlockExplorer}"`)
@@ -114,5 +125,18 @@ export class ZkSyncBlockExplorerController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
     return this.zkSyncBlockExplorerService.getAddressReport(hash, ethPrice);
+  }
+
+  @Post('/multiple-addresses-report')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Multiple Addresses report (balance, transactions) in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Multiple Addresses.',
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getMultipleAddressesReport(@Body() dto: MultipleAddressesReportDto) {
+    return this.zkSyncBlockExplorerService.getMultipleAddressesReport(dto.addresses, dto.ethPrice);
   }
 }
