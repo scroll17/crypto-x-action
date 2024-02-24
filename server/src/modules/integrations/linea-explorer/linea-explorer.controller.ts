@@ -94,7 +94,7 @@ export class LineaExplorerController {
     },
   })
   @ApiParam({ name: 'hash', type: String })
-  @ApiQuery({ name: 'ethPrice', type: String })
+  @ApiQuery({ name: 'ethPrice', type: Number })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getTransactionsStat(
     @Param('hash') hash: string,

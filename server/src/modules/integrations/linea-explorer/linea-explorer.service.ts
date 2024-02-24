@@ -93,6 +93,7 @@ export class LineaExplorerService extends AbstractBlockchainExplorerIntegration 
         status: response.status,
         statusText: response.statusText,
         data: response.data,
+        params: params,
       });
       return new HttpException(
         message + ` ([status=${response.status}] [text=${response.statusText}])`,
@@ -132,7 +133,7 @@ export class LineaExplorerService extends AbstractBlockchainExplorerIntegration 
     addressHash: string,
     transactions: ILineaExplorerAccountTransactionsData[],
     ethPrice: number,
-  ) {
+  ): ITransactionsStat {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
       const isReceipted = t.txreceipt_status === '1';
@@ -414,7 +415,10 @@ export class LineaExplorerService extends AbstractBlockchainExplorerIntegration 
     }
   }
 
-  public override async getTransactionsStat(addressHash: string, ethPrice: number) {
+  public override async getTransactionsStat(
+    addressHash: string,
+    ethPrice: number,
+  ): Promise<ITransactionsStat> {
     const transactions = await this.getAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions, ethPrice);
   }
