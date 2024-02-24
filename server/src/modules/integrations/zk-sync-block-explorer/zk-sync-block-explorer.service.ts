@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { IntegrationNames } from '@common/integrations/common';
+import { IBlockchainExplorerAddressReport, IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   IZkSyncBlockExplorerAccountTransactionsData,
@@ -91,7 +91,7 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
         status: response.status,
         statusText: response.statusText,
         data: response.data,
-        params: params
+        params: params,
       });
       return new HttpException(
         message + ` ([status=${response.status}] [text=${response.statusText}])`,
@@ -386,7 +386,10 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
     }
   }
 
-  public override async getTransactionsStat(addressHash: string, ethPrice?: number): Promise<ITransactionsStat> {
+  public override async getTransactionsStat(
+    addressHash: string,
+    ethPrice?: number,
+  ): Promise<ITransactionsStat> {
     let price = ethPrice;
     if (!price) {
       const ethPrice = await this.getEthPrice();
@@ -395,5 +398,24 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
 
     const transactions = await this.getAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions, price);
+  }
+
+  // public override async getAddressReport(
+  public async getAddressReport(
+    addressHash: string,
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerAddressReport> {
+    const addressBalance = await this.getAddressBalance(addressHash);
+    const balance = this.convertAddressBalance(addressBalance.balance, 'ether');
+
+    const transactions = await this.getAddressTransactions(addressHash);
+    const transactionsStat = this.buildTransactionsStat(addressHash, transactions, ethPrice);
+
+    return this.buildAddressReport({
+      addressHash,
+      ethPrice,
+      transactionsStat,
+      ethBalance: balance,
+    });
   }
 }

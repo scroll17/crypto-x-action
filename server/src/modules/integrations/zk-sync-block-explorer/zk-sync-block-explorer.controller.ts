@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, ParseFloatPipe, Query } from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -99,5 +99,20 @@ export class ZkSyncBlockExplorerController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getTransactionsStat(@Param('hash') hash: string) {
     return this.zkSyncBlockExplorerService.getTransactionsStat(hash);
+  }
+
+  @Get('/address-report/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address report (balance, transactions) in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Address report info.',
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiQuery({ name: 'ethPrice', type: Number })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
+    return this.zkSyncBlockExplorerService.getAddressReport(hash, ethPrice);
   }
 }
