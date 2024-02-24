@@ -430,8 +430,7 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
     return this.buildTransactionsStat(addressHash, transactions, ethPrice);
   }
 
-  // public override async getAddressReport(
-  public async getAddressReport(
+  public override async getAddressReport(
     addressHash: string,
     ethPrice: number,
   ): Promise<IBlockchainExplorerAddressReport> {
@@ -449,8 +448,7 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
     });
   }
 
-  // public override async getMultipleAddressesReport(
-  public async getMultipleAddressesReport(
+  public override async getMultipleAddressesReport(
     addressHashes: string[],
     ethPrice: number,
   ): Promise<IBlockchainExplorerMultipleAddressesReport> {

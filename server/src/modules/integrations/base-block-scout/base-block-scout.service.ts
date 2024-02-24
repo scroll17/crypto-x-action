@@ -309,8 +309,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     return this.buildTransactionsStat(addressHash, transactions);
   }
 
-  // public override async getAddressReport(
-  public async getAddressReport(
+  public override async getAddressReport(
     addressHash: string,
     ethPrice: number,
   ): Promise<IBlockchainExplorerAddressReport> {
@@ -328,8 +327,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     });
   }
 
-  // public override async getMultipleAddressesReport(
-  public async getMultipleAddressesReport(
+  public override async getMultipleAddressesReport(
     addressHashes: string[],
     ethPrice: number,
   ): Promise<IBlockchainExplorerMultipleAddressesReport> {

@@ -38,7 +38,10 @@ export abstract class AbstractBlockchainExplorerIntegration implements OnModuleI
 
   public abstract getTransactionsStat(addressHash: string, ethPrice: number): Promise<ITransactionsStat>;
 
-  // public abstract getAddressReport(addressHash: string, ethPrice: number): Promise<IBlockchainExplorerAddressReport>;
+  public abstract getAddressReport(
+    addressHash: string,
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerAddressReport>;
   /**
    *  1. load balance
    *  2. get tokens (we omit it)
@@ -61,8 +64,10 @@ export abstract class AbstractBlockchainExplorerIntegration implements OnModuleI
    *    11. total gasPrice (+usd)
    * */
 
-  // eslint-disable-next-line max-len
-  // public abstract getMultipleAddressesReport(addressHashes: string[], ethPrice: number): Promise<IBlockchainExplorerMultipleAddressesReport>;
+  public abstract getMultipleAddressesReport(
+    addressHashes: string[],
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerMultipleAddressesReport>;
   /**
    *  1. reports[]
    *  2. total:
@@ -176,12 +181,3 @@ export abstract class AbstractBlockchainExplorerIntegration implements OnModuleI
     };
   }
 }
-
-/**
- *  TODO (steps)
- *    1. add types
- *    2. add new methods
- *    3. add endpoints
- *    4. handlerError + refactor
- *    5. add "override"
- * */
