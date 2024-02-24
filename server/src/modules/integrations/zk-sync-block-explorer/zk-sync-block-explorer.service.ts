@@ -91,6 +91,7 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
         status: response.status,
         statusText: response.statusText,
         data: response.data,
+        params: params
       });
       return new HttpException(
         message + ` ([status=${response.status}] [text=${response.statusText}])`,
@@ -130,7 +131,7 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
     addressHash: string,
     transactions: IZkSyncBlockExplorerAccountTransactionsData[],
     ethPrice: number,
-  ) {
+  ): ITransactionsStat {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
       const isReceipted = t.txreceipt_status === '1';
@@ -385,7 +386,7 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
     }
   }
 
-  public override async getTransactionsStat(addressHash: string, ethPrice?: number) {
+  public override async getTransactionsStat(addressHash: string, ethPrice?: number): Promise<ITransactionsStat> {
     let price = ethPrice;
     if (!price) {
       const ethPrice = await this.getEthPrice();
