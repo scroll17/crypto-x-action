@@ -48,6 +48,24 @@ export class ScrollBlockScoutController {
     return this.scrollBlockScoutService.getCoinPrice();
   }
 
+  @Get('/token-balance')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Token balance by Address & Contract in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with balance.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiQuery({ name: 'address', type: String })
+  @ApiQuery({ name: 'contract', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getTokenBalance(@Query('address') address: string, @Query('contract') contract: string) {
+    return this.scrollBlockScoutService.getTokenBalance(address, contract);
+  }
+
   @Get('/address-balance/:hash')
   @DevEndpoint()
   @HttpCode(HttpStatus.OK)
@@ -65,7 +83,7 @@ export class ScrollBlockScoutController {
     return this.scrollBlockScoutService.getAddressBalance(hash);
   }
 
-  @Get('/address-transactions/:hash')
+  @Get('/transactions/:hash')
   @DevEndpoint()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get Address transactions in Blockchain.' })
@@ -94,7 +112,7 @@ export class ScrollBlockScoutController {
     },
   })
   @ApiParam({ name: 'hash', type: String })
-  @ApiQuery({ name: 'ethPrice', type: String })
+  @ApiQuery({ name: 'ethPrice', type: Number })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getTransactionsStat(
     @Param('hash') hash: string,
@@ -103,21 +121,18 @@ export class ScrollBlockScoutController {
     return this.scrollBlockScoutService.getTransactionsStat(hash, ethPrice);
   }
 
-  @Get('/token-balance')
+  @Get('/address-report/:hash')
   @DevEndpoint()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Token balance by Address & Contract in Blockchain.' })
+  @ApiOperation({ summary: 'Get Address report (balance, transactions) in Blockchain.' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Object with balance.',
-    schema: {
-      type: 'object',
-    },
+    description: 'Object with Address report info.',
   })
-  @ApiQuery({ name: 'address', type: String })
-  @ApiQuery({ name: 'contract', type: String })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiQuery({ name: 'ethPrice', type: Number })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getTokenBalance(@Query('address') address: string, @Query('contract') contract: string) {
-    return this.scrollBlockScoutService.getTokenBalance(address, contract);
+  async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
+    return this.scrollBlockScoutService.getAddressReport(hash, ethPrice)
   }
 }

@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { IntegrationNames } from '@common/integrations/common';
+import {IBlockchainExplorerAddressReport, IntegrationNames} from '@common/integrations/common';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   ScrollBlockScoutApiActions,
@@ -96,6 +96,7 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
         status: response.status,
         statusText: response.statusText,
         data: response.data,
+        params: params,
       });
       return new HttpException(
         message + ` ([status=${response.status}] [text=${response.statusText}])`,
@@ -135,7 +136,7 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
     addressHash: string,
     transactions: IScrollBlockScoutAccountTransactionsData[],
     ethPrice: number,
-  ) {
+  ): ITransactionsStat {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
       const isReceipted = t.txreceipt_status === '1';
@@ -417,8 +418,27 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
     }
   }
 
-  public override async getTransactionsStat(addressHash: string, ethPrice: number) {
+  public override async getTransactionsStat(addressHash: string, ethPrice: number): Promise<ITransactionsStat> {
     const transactions = await this.getAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions, ethPrice);
+  }
+
+  // public override async getAddressReport(
+  public async getAddressReport(
+    addressHash: string,
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerAddressReport> {
+    const addressBalance = await this.getAddressBalance(addressHash);
+    const balance = this.convertAddressBalance(addressBalance.balance, 'ether');
+
+    const transactions = await this.getAddressTransactions(addressHash);
+    const transactionsStat = this.buildTransactionsStat(addressHash, transactions, ethPrice);
+
+    return this.buildAddressReport({
+      addressHash,
+      ethPrice,
+      transactionsStat,
+      ethBalance: balance,
+    });
   }
 }

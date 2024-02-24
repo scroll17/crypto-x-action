@@ -59,6 +59,24 @@ export class LineaExplorerController {
     return this.lineaExplorerService.getCoinPrice();
   }
 
+  @Get('/token-balance')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Token balance by Address & Contract in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with balance.',
+    schema: {
+      type: 'object',
+    },
+  })
+  @ApiQuery({ name: 'address', type: String })
+  @ApiQuery({ name: 'contract', type: String })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getTokenBalance(@Query('address') address: string, @Query('contract') contract: string) {
+    return this.lineaExplorerService.getTokenBalance(address, contract);
+  }
+
   @Get('/address-balance/:hash')
   @DevEndpoint()
   @HttpCode(HttpStatus.OK)
@@ -112,24 +130,6 @@ export class LineaExplorerController {
     @Query('ethPrice', ParseFloatPipe) ethPrice: number,
   ) {
     return this.lineaExplorerService.getTransactionsStat(hash, ethPrice);
-  }
-
-  @Get('/token-balance')
-  @DevEndpoint()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get Token balance by Address & Contract in Blockchain.' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Object with balance.',
-    schema: {
-      type: 'object',
-    },
-  })
-  @ApiQuery({ name: 'address', type: String })
-  @ApiQuery({ name: 'contract', type: String })
-  @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async getTokenBalance(@Query('address') address: string, @Query('contract') contract: string) {
-    return this.lineaExplorerService.getTokenBalance(address, contract);
   }
 
   @Get('/address-report/:hash')

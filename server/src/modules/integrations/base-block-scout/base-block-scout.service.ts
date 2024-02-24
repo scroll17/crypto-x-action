@@ -328,7 +328,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     });
   }
 
-  // public override async getMultipleAddressesReport(addressHashes: string[], ethPrice: number) {
+  // public override async getMultipleAddressesReport(
   public async getMultipleAddressesReport(
     addressHashes: string[],
     ethPrice: number,
