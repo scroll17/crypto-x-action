@@ -315,26 +315,11 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     const transactions = await this.getAllAddressTransactions(addressHash);
     const transactionsStat = this.buildTransactionsStat(addressHash, transactions, ethPrice);
 
-    const { total: transactionsTotal, unique: transactionsUniques } = transactionsStat;
-
-    return {
-      address: addressHash,
-      eth: [balance, Number.parseFloat(balance) * ethPrice],
-      txCount: transactionsStat.txCount,
-      volume: [this.convertAddressBalance(transactionsTotal.volume, 'ether'), transactionsTotal.USDVolume],
-      gasUsed: this.convertAddressBalance(transactionsTotal.gasUsed, 'ether'),
-      dContracts: transactionsStat.deployedContracts.length,
-      uContracts: transactionsUniques.contracts.length,
-      uDays: transactionsUniques.days.length,
-      uWeeks: transactionsUniques.weeks.length,
-      uMonths: transactionsUniques.months.length,
-      firstTxDate: transactionsStat.firstTxDate,
-      lastTxDate: transactionsStat.lastTxDate,
-      totalFee: [this.convertAddressBalance(transactionsTotal.fee, 'ether'), transactionsTotal.USDFee],
-      totalGasPrice: [
-        this.convertAddressBalance(transactionsTotal.gasPrice, 'ether'),
-        transactionsTotal.USDGasPrice,
-      ],
-    };
+    return this.buildAddressReport({
+      addressHash,
+      ethPrice,
+      transactionsStat,
+      ethBalance: balance,
+    });
   }
 }
