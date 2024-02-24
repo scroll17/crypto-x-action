@@ -6,7 +6,11 @@ import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { IBlockchainExplorerAddressReport, IntegrationNames } from '@common/integrations/common';
+import {
+  IBlockchainExplorerAddressReport,
+  IBlockchainExplorerMultipleAddressesReport,
+  IntegrationNames,
+} from '@common/integrations/common';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   BaseBlockScoutApiRoutes,
@@ -84,7 +88,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
         status: response.status,
         statusText: response.statusText,
         data: response.data,
-        params: params
+        params: params,
       });
       return new HttpException(
         message + ` ([status=${response.status}] [text=${response.statusText}])`,
@@ -322,5 +326,20 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
       transactionsStat,
       ethBalance: balance,
     });
+  }
+
+  // public override async getMultipleAddressesReport(addressHashes: string[], ethPrice: number) {
+  public async getMultipleAddressesReport(
+    addressHashes: string[],
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerMultipleAddressesReport> {
+    const loaders = addressHashes.map((address) => () => this.getAddressReport(address, ethPrice));
+    const reports = await this.batchLoader(
+      loaders,
+      this.DEFAULT_BATCH_SIZE,
+      this.DEFAULT_SLEEP_AFTER_BATCH_LOAD,
+    );
+
+    return this.buildMultipleAddressesReport(reports);
   }
 }

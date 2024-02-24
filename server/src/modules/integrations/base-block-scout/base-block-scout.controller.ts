@@ -1,4 +1,14 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, ParseFloatPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseFloatPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -7,9 +17,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { DevEndpoint } from '@common/decorators';
 import { BaseBlockScoutService } from './base-block-scout.service';
 import { IntegrationNames } from '@common/integrations/common';
-import { DevEndpoint } from '@common/decorators';
+import { MultipleAddressesReportDto } from './dto/multiple-addresses-report.dto';
 
 @Controller(`integrations/${IntegrationNames.BaseBlockScout}`)
 @ApiTags(`Integrations: "${IntegrationNames.BaseBlockScout}"`)
@@ -106,12 +117,25 @@ export class BaseBlockScoutController {
   @ApiOperation({ summary: 'Get Address report (balance, transactions) in Blockchain.' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Object with Address report info by Address.',
+    description: 'Object with Address report info.',
   })
   @ApiParam({ name: 'hash', type: String })
   @ApiQuery({ name: 'ethPrice', type: Number })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
     return this.baseBlockScoutService.getAddressReport(hash, ethPrice);
+  }
+
+  @Post('/multiple-addresses-report')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Multiple Addresses report (balance, transactions) in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Multiple Addresses.',
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getMultipleAddressesReport(@Body() dto: MultipleAddressesReportDto) {
+    return this.baseBlockScoutService.getMultipleAddressesReport(dto.addresses, dto.ethPrice);
   }
 }
