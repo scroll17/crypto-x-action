@@ -1,4 +1,14 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, ParseFloatPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseFloatPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -7,9 +17,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { DevEndpoint } from '@common/decorators';
 import { LineaExplorerService } from './linea-explorer.service';
 import { IntegrationNames } from '@common/integrations/common';
-import { DevEndpoint } from '@common/decorators';
+import { MultipleAddressesReportDto } from './dto/multiple-addresses-report.dto';
 
 @Controller(`integrations/${IntegrationNames.LineaExplorer}`)
 @ApiTags(`Integrations: "${IntegrationNames.LineaExplorer}"`)
@@ -65,7 +76,7 @@ export class LineaExplorerController {
     return this.lineaExplorerService.getAddressBalance(hash);
   }
 
-  @Get('/address-transactions/:hash')
+  @Get('/transactions/:hash')
   @DevEndpoint()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get Address transactions in Blockchain.' })
@@ -134,5 +145,18 @@ export class LineaExplorerController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
     return this.lineaExplorerService.getAddressReport(hash, ethPrice);
+  }
+
+  @Post('/multiple-addresses-report')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Multiple Addresses report (balance, transactions) in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Multiple Addresses.',
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getMultipleAddressesReport(@Body() dto: MultipleAddressesReportDto) {
+    return this.lineaExplorerService.getMultipleAddressesReport(dto.addresses, dto.ethPrice);
   }
 }
