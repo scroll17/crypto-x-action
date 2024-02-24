@@ -27,6 +27,9 @@
       ],
       "@common/*": [
         "src/common/*"
+      ],
+      "@integrations/*": [
+        "src/modules/integrations/*"
       ]
     }
   },
