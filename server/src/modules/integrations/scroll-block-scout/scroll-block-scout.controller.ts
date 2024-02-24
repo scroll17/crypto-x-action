@@ -1,4 +1,14 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, ParseFloatPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseFloatPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -10,6 +20,7 @@ import {
 import { ScrollBlockScoutService } from './scroll-block-scout.service';
 import { IntegrationNames } from '@common/integrations/common';
 import { DevEndpoint } from '@common/decorators';
+import { MultipleAddressesReportDto } from './dto/multiple-addresses-report.dto';
 
 @Controller(`integrations/${IntegrationNames.ScrollBlockScout}`)
 @ApiTags(`Integrations: "${IntegrationNames.ScrollBlockScout}"`)
@@ -133,6 +144,19 @@ export class ScrollBlockScoutController {
   @ApiQuery({ name: 'ethPrice', type: Number })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
-    return this.scrollBlockScoutService.getAddressReport(hash, ethPrice)
+    return this.scrollBlockScoutService.getAddressReport(hash, ethPrice);
+  }
+
+  @Post('/multiple-addresses-report')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Multiple Addresses report (balance, transactions) in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Multiple Addresses.',
+  })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getMultipleAddressesReport(@Body() dto: MultipleAddressesReportDto) {
+    return this.scrollBlockScoutService.getMultipleAddressesReport(dto.addresses, dto.ethPrice);
   }
 }
