@@ -1,3 +1,4 @@
+// TODO: BlockchainExplorer
 export interface ITransactionsStat {
   txCount: number;
   txDayMap: Array<[string, string]>;
