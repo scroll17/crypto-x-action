@@ -1,5 +1,12 @@
-import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus, Param, ParseFloatPipe, Query } from '@nestjs/common';
+import {
+  ApiForbiddenResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BaseBlockScoutService } from './base-block-scout.service';
 import { IntegrationNames } from '@common/integrations/common';
 import { DevEndpoint } from '@common/decorators';
@@ -91,5 +98,20 @@ export class BaseBlockScoutController {
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getTransactionsStat(@Param('hash') hash: string) {
     return this.baseBlockScoutService.getTransactionsStat(hash, 0);
+  }
+
+  @Get('/address-report/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address report (balance, transactions) in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Address report info by Address.',
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiQuery({ name: 'ethPrice', type: Number })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
+    return this.baseBlockScoutService.getAddressReport(hash, ethPrice);
   }
 }

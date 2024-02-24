@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { IntegrationNames } from '@common/integrations/common';
+import { IBlockchainExplorerAddressReport, IntegrationNames } from '@common/integrations/common';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   BaseBlockScoutApiRoutes,
@@ -100,7 +100,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     addressHash: string,
     transactions: IBaseBlockScoutTransaction[],
     ethPrice?: number,
-  ) {
+  ): ITransactionsStat {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.hash.toLowerCase() === addressHash.toLowerCase();
       const isSuccessful = t.result === 'success';
@@ -143,6 +143,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
       if (tx.to) {
         uniqueContracts.add(tx.to.hash);
       }
+
       if (tx.created_contract) {
         deployedContracts.add(tx.created_contract.hash);
       }
@@ -295,15 +296,45 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     return transactions;
   }
 
-  public override async getTransactionsStat(addressHash: string, ethPrice: number) {
+  public override async getTransactionsStat(
+    addressHash: string,
+    ethPrice: number,
+  ): Promise<ITransactionsStat> {
     const transactions = await this.getAllAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions);
   }
 
-  public async getAddressReport(addressHash: string, ethPrice: number) {
+  // public override async getAddressReport(
+  public async getAddressReport(
+    addressHash: string,
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerAddressReport> {
     const address = await this.getAddress(addressHash);
     const balance = this.convertAddressBalance(address.coin_balance, 'ether');
 
+    const transactions = await this.getAllAddressTransactions(addressHash);
+    const transactionsStat = this.buildTransactionsStat(addressHash, transactions, ethPrice);
 
+    const { total: transactionsTotal, unique: transactionsUniques } = transactionsStat;
+
+    return {
+      address: addressHash,
+      eth: [balance, Number.parseFloat(balance) * ethPrice],
+      txCount: transactionsStat.txCount,
+      volume: [this.convertAddressBalance(transactionsTotal.volume, 'ether'), transactionsTotal.USDVolume],
+      gasUsed: this.convertAddressBalance(transactionsTotal.gasUsed, 'ether'),
+      dContracts: transactionsStat.deployedContracts.length,
+      uContracts: transactionsUniques.contracts.length,
+      uDays: transactionsUniques.days.length,
+      uWeeks: transactionsUniques.weeks.length,
+      uMonths: transactionsUniques.months.length,
+      firstTxDate: transactionsStat.firstTxDate,
+      lastTxDate: transactionsStat.lastTxDate,
+      totalFee: [this.convertAddressBalance(transactionsTotal.fee, 'ether'), transactionsTotal.USDFee],
+      totalGasPrice: [
+        this.convertAddressBalance(transactionsTotal.gasPrice, 'ether'),
+        transactionsTotal.USDGasPrice,
+      ],
+    };
   }
 }
