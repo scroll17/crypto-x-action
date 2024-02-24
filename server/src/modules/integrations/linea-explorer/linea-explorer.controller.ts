@@ -120,4 +120,19 @@ export class LineaExplorerController {
   async getTokenBalance(@Query('address') address: string, @Query('contract') contract: string) {
     return this.lineaExplorerService.getTokenBalance(address, contract);
   }
+
+  @Get('/address-report/:hash')
+  @DevEndpoint()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get Address report (balance, transactions) in Blockchain.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Object with Address report info.',
+  })
+  @ApiParam({ name: 'hash', type: String })
+  @ApiQuery({ name: 'ethPrice', type: Number })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
+  async getAddressReport(@Param('hash') hash: string, @Query('ethPrice', ParseFloatPipe) ethPrice: number) {
+    return this.lineaExplorerService.getAddressReport(hash, ethPrice);
+  }
 }

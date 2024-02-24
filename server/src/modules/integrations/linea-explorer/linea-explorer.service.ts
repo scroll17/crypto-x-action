@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { IntegrationNames } from '@common/integrations/common';
+import {IBlockchainExplorerAddressReport, IntegrationNames} from '@common/integrations/common';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import {
   ILineaExplorerAccountTransactionsData,
@@ -421,5 +421,24 @@ export class LineaExplorerService extends AbstractBlockchainExplorerIntegration 
   ): Promise<ITransactionsStat> {
     const transactions = await this.getAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions, ethPrice);
+  }
+
+  // public override async getAddressReport(
+  public async getAddressReport(
+    addressHash: string,
+    ethPrice: number,
+  ): Promise<IBlockchainExplorerAddressReport> {
+    const addressBalance = await this.getAddressBalance(addressHash);
+    const balance = this.convertAddressBalance(addressBalance.balance, 'ether');
+
+    const transactions = await this.getAddressTransactions(addressHash);
+    const transactionsStat = this.buildTransactionsStat(addressHash, transactions, ethPrice);
+
+    return this.buildAddressReport({
+      addressHash,
+      ethPrice,
+      transactionsStat,
+      ethBalance: balance,
+    });
   }
 }
