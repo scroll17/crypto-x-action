@@ -63,13 +63,20 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
   }
 
   protected override async initConnection() {
-    this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
+    try {
+      this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
-    const result = await this.getStats();
+      const result = await this.getStats();
 
-    this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
-      stats: result,
-    });
+      this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
+        stats: result,
+      });
+    } catch (error) {
+      this.logger.error(`Init connection to the "${this.INTEGRATION_KEY}" Integration error:`, {
+        error,
+        message: error.message,
+      });
+    }
   }
 
   // TOOLS

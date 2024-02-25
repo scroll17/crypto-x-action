@@ -66,14 +66,21 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
   }
 
   protected override async initConnection() {
-    this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
+    try {
+      this.logger.debug(`Ping the "${this.INTEGRATION_KEY}" Integration server`);
 
-    const date = dayjs().format('YYYY-MM-DD');
-    const result = await this.getTotalFees(date);
+      const date = dayjs().format('YYYY-MM-DD');
+      const result = await this.getTotalFees(date);
 
-    this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
-      stats: result,
-    });
+      this.logger.verbose(`Ping to the "${this.INTEGRATION_KEY}" Integration server result`, {
+        stats: result,
+      });
+    } catch (error) {
+      this.logger.error(`Init connection to the "${this.INTEGRATION_KEY}" Integration error:`, {
+        error,
+        message: error.message,
+      });
+    }
   }
 
   // TOOLS
