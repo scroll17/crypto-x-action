@@ -142,8 +142,8 @@ export abstract class AbstractBlockchainExplorerIntegration implements OnModuleI
       uMonths: transactionsUniques.months.length,
       firstTxDate: transactionsStat.firstTxDate,
       lastTxDate: transactionsStat.lastTxDate,
-      totalFee: [this.convertAddressBalance(transactionsTotal.fee, 'ether'), transactionsTotal.USDFee],
-      totalGasPrice: [
+      fee: [this.convertAddressBalance(transactionsTotal.fee, 'ether'), transactionsTotal.USDFee],
+      gasPrice: [
         this.convertAddressBalance(transactionsTotal.gasPrice, 'ether'),
         transactionsTotal.USDGasPrice,
       ],
@@ -165,11 +165,11 @@ export abstract class AbstractBlockchainExplorerIntegration implements OnModuleI
       totalVolume[0] += Number.parseFloat(report.volume[0]);
       totalVolume[1] += report.volume[1];
 
-      totalFee[0] += Number.parseFloat(report.totalFee[0]);
-      totalFee[1] += report.totalFee[1];
+      totalFee[0] += Number.parseFloat(report.fee[0]);
+      totalFee[1] += report.fee[1];
 
-      totalGasPrice[0] += Number.parseFloat(report.totalGasPrice[0]);
-      totalGasPrice[1] += report.totalGasPrice[1];
+      totalGasPrice[0] += Number.parseFloat(report.gasPrice[0]);
+      totalGasPrice[1] += report.gasPrice[1];
     });
 
     return {

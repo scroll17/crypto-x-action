@@ -13,6 +13,6 @@ export interface IBlockchainExplorerAddressReport {
   uMonths: number;
   firstTxDate: Date | null;
   lastTxDate: Date | null;
-  totalFee: TETHtoUSDPrice;
-  totalGasPrice: TETHtoUSDPrice;
+  fee: TETHtoUSDPrice;
+  gasPrice: TETHtoUSDPrice;
 }
