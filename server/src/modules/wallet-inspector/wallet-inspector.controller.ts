@@ -1,8 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, ParseBoolPipe, Post, Query } from '@nestjs/common';
 import { ApiForbiddenResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WalletInspectorService } from './wallet-inspector.service';
 import { AuthUser } from '@common/decorators';
+import { WalletInspectorService } from './wallet-inspector.service';
 import { GetTransactionsReportDto } from './dto';
+import { TransactionReportEntity } from './entities';
 
 @Controller('wallet-checker')
 @ApiTags('WalletChecker')
@@ -35,7 +36,7 @@ export class WalletInspectorController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Object Transactions report by Multiple Addresses.',
-    type: [String], // TODO
+    type: TransactionReportEntity,
   })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   async getMultipleAddressesReport(@Body() dto: GetTransactionsReportDto) {
