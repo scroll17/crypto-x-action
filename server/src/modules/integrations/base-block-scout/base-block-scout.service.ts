@@ -21,7 +21,7 @@ import {
   TBaseBlockScoutTokenBalancesResponse,
   TBaseBlockScoutTransactionsResponse,
 } from '@common/integrations/base-block-scout';
-import { ITransactionsStat } from '@common/integrations/common';
+import { IBlockchainExplorerTransactionsStat } from '@common/integrations/common';
 import { AbstractBlockchainExplorerIntegration } from '../_utils/abstract-blockchain-explorer-integration';
 
 dayjs.extend(isoWeek);
@@ -105,7 +105,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
     addressHash: string,
     transactions: IBaseBlockScoutTransaction[],
     ethPrice?: number,
-  ): ITransactionsStat {
+  ): IBlockchainExplorerTransactionsStat {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.hash.toLowerCase() === addressHash.toLowerCase();
       const isSuccessful = t.result === 'success';
@@ -170,7 +170,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
         Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * exchangeRate;
     });
 
-    const stat: ITransactionsStat = {
+    const stat: IBlockchainExplorerTransactionsStat = {
       txCount: successfulTransactions.length,
       txDayMap: [...transactionDayMap.entries()],
       firstTxDate: firstTransaction ? new Date(firstTransaction.timestamp) : null,
@@ -304,7 +304,7 @@ export class BaseBlockScoutService extends AbstractBlockchainExplorerIntegration
   public override async getTransactionsStat(
     addressHash: string,
     ethPrice: number,
-  ): Promise<ITransactionsStat> {
+  ): Promise<IBlockchainExplorerTransactionsStat> {
     const transactions = await this.getAllAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions);
   }

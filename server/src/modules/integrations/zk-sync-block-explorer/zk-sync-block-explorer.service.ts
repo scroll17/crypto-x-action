@@ -22,7 +22,7 @@ import {
   ZkSyncBlockExplorerApiActions,
   ZkSyncBlockExplorerApiModules,
 } from '@common/integrations/zk-sync-block-explorer';
-import { ITransactionsStat } from '@common/integrations/common';
+import { IBlockchainExplorerTransactionsStat } from '@common/integrations/common';
 import { AbstractBlockchainExplorerIntegration } from '../_utils/abstract-blockchain-explorer-integration';
 
 @Injectable()
@@ -135,7 +135,7 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
     addressHash: string,
     transactions: IZkSyncBlockExplorerAccountTransactionsData[],
     ethPrice: number,
-  ): ITransactionsStat {
+  ): IBlockchainExplorerTransactionsStat {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
       const isReceipted = t.txreceipt_status === '1';
@@ -205,7 +205,7 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
         Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * exchangeRate;
     });
 
-    const stat: ITransactionsStat = {
+    const stat: IBlockchainExplorerTransactionsStat = {
       txCount: successfulTransactions.length,
       txDayMap: [...transactionDayMap.entries()],
       firstTxDate: firstTransaction ? new Date(Number.parseInt(firstTransaction.timeStamp) * 1000) : null,
@@ -393,7 +393,7 @@ export class ZkSyncBlockExplorerService extends AbstractBlockchainExplorerIntegr
   public override async getTransactionsStat(
     addressHash: string,
     ethPrice?: number,
-  ): Promise<ITransactionsStat> {
+  ): Promise<IBlockchainExplorerTransactionsStat> {
     let price = ethPrice;
     if (!price) {
       const ethPrice = await this.getEthPrice();

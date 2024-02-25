@@ -5,7 +5,7 @@ import { HttpException, HttpStatus, Logger, OnModuleInit } from '@nestjs/common'
 import {
   IBlockchainExplorerAddressReport,
   IBlockchainExplorerMultipleAddressesReport,
-  ITransactionsStat,
+  IBlockchainExplorerTransactionsStat,
 } from '@common/integrations/common';
 
 export abstract class AbstractBlockchainExplorerIntegration implements OnModuleInit {
@@ -34,9 +34,9 @@ export abstract class AbstractBlockchainExplorerIntegration implements OnModuleI
     addressHash: string,
     transactions: unknown[],
     ethPrice?: number,
-  ): ITransactionsStat;
+  ): IBlockchainExplorerTransactionsStat;
 
-  public abstract getTransactionsStat(addressHash: string, ethPrice: number): Promise<ITransactionsStat>;
+  public abstract getTransactionsStat(addressHash: string, ethPrice: number): Promise<IBlockchainExplorerTransactionsStat>;
 
   public abstract getAddressReport(
     addressHash: string,
@@ -125,7 +125,7 @@ export abstract class AbstractBlockchainExplorerIntegration implements OnModuleI
     addressHash: string;
     ethPrice: number;
     ethBalance: string;
-    transactionsStat: ITransactionsStat;
+    transactionsStat: IBlockchainExplorerTransactionsStat;
   }): IBlockchainExplorerAddressReport {
     const { total: transactionsTotal, unique: transactionsUniques } = transactionsStat;
 

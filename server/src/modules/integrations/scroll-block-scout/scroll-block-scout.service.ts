@@ -24,7 +24,7 @@ import {
   TScrollBlockScoutAccountTransactionsResponse,
   IScrollBlockScoutAccountTransactionsData,
 } from '@common/integrations/scroll-block-scout';
-import { ITransactionsStat } from '@common/integrations/common';
+import { IBlockchainExplorerTransactionsStat } from '@common/integrations/common';
 import { AbstractBlockchainExplorerIntegration } from '../_utils/abstract-blockchain-explorer-integration';
 
 dayjs.extend(isoWeek);
@@ -140,7 +140,7 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
     addressHash: string,
     transactions: IScrollBlockScoutAccountTransactionsData[],
     ethPrice: number,
-  ): ITransactionsStat {
+  ): IBlockchainExplorerTransactionsStat {
     const successfulTransactions = transactions.filter((t) => {
       const isSendByAddress = t.from.toLowerCase() === addressHash.toLowerCase();
       const isReceipted = t.txreceipt_status === '1';
@@ -208,7 +208,7 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
         Number.parseFloat(Web3Utils.fromWei(transactionTotalGasPrice, 'ether')) * exchangeRate;
     });
 
-    const stat: ITransactionsStat = {
+    const stat: IBlockchainExplorerTransactionsStat = {
       txCount: successfulTransactions.length,
       txDayMap: [...transactionDayMap.entries()],
       firstTxDate: firstTransaction ? new Date(Number.parseInt(firstTransaction.timeStamp) * 1000) : null,
@@ -425,7 +425,7 @@ export class ScrollBlockScoutService extends AbstractBlockchainExplorerIntegrati
   public override async getTransactionsStat(
     addressHash: string,
     ethPrice: number,
-  ): Promise<ITransactionsStat> {
+  ): Promise<IBlockchainExplorerTransactionsStat> {
     const transactions = await this.getAddressTransactions(addressHash);
     return this.buildTransactionsStat(addressHash, transactions, ethPrice);
   }
