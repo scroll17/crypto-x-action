@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import { BlockchainNetworkName } from '@common/blockchain/enums';
 import { IntegrationNames } from '@common/integrations/common';
+import { TransactionReportColumnEntity } from './modules/wallet-inspector/entities';
 
 export namespace AppConstants {
   export namespace Env {
@@ -44,5 +45,94 @@ export namespace AppConstants {
         },
       } as const;
     }
+  }
+
+  export namespace WalletInspector {
+    export const TRANSACTIONS_REPORT_COLUMNS_MAP: TransactionReportColumnEntity[] = [
+      {
+        index: 1,
+        fieldName: 'address',
+        columnName: 'Address',
+        focusName: 'Blockchain Address',
+      },
+      {
+        index: 2,
+        fieldName: 'eth',
+        columnName: 'ETH',
+        focusName: 'Total ETH Balance',
+      },
+      {
+        index: 3,
+        fieldName: 'txCount',
+        columnName: 'TX count',
+        focusName: 'Transactions count',
+      },
+      {
+        index: 4,
+        fieldName: 'volume',
+        columnName: 'Volume',
+        focusName: 'Total Transactions volume',
+      },
+      {
+        index: 5,
+        fieldName: 'gasUsed',
+        columnName: 'Gas used',
+        focusName: 'Total Transactions gas used',
+      },
+      {
+        index: 6,
+        fieldName: 'dContracts',
+        columnName: 'D Contracts',
+        focusName: 'Deployed Contracts',
+      },
+      {
+        index: 7,
+        fieldName: 'uContracts',
+        columnName: 'U Contracts',
+        focusName: 'Unique Contracts',
+      },
+      {
+        index: 8,
+        fieldName: 'uDays',
+        columnName: 'U Days',
+        focusName: 'Unique Days',
+      },
+      {
+        index: 9,
+        fieldName: 'uWeeks',
+        columnName: 'U Weeks',
+        focusName: 'Unique Weeks',
+      },
+      {
+        index: 10,
+        fieldName: 'uMonths',
+        columnName: 'U Months',
+        focusName: 'Unique Months',
+      },
+      {
+        index: 11,
+        fieldName: 'firstTxDate',
+        columnName: 'First TX Day',
+        focusName: 'Day of first Transaction',
+      },
+      {
+        index: 12,
+        fieldName: 'lastTxDate',
+        columnName: 'Last TX Day',
+        focusName: 'Day of last Transaction',
+      },
+      {
+        index: 13,
+        fieldName: 'fee',
+        columnName: 'Fee',
+        focusName: 'Total Transactions fee',
+      },
+      {
+        index: 14,
+        fieldName: 'gasPrice',
+        columnName: 'Gas price',
+        focusName: 'Total Transactions fas price',
+      },
+    ];
   }
 }

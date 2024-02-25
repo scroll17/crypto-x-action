@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TransactionReportItemEntity {
   @ApiProperty({
@@ -71,23 +71,21 @@ export class TransactionReportItemEntity {
   })
   uMonths: number;
 
-  @ApiPropertyOptional()
   @ApiProperty({
     type: String,
     format: 'date-time',
     example: '2023/03/21',
     description: 'The time when first transaction was completed by single Address',
   })
-  firstTxDate: string | null;
+  firstTxDate: string;
 
-  @ApiPropertyOptional()
   @ApiProperty({
     type: String,
     format: 'date-time',
-    example: '2023/03/29',
+    example: '-',
     description: 'The time when last transaction was completed by single Address',
   })
-  lastTxDate: string | null;
+  lastTxDate: string;
 
   @ApiProperty({
     type: String,
@@ -101,5 +99,5 @@ export class TransactionReportItemEntity {
     example: '0.00019 ($5)',
     description: 'The total paid Gas price of all transactions by single Address',
   })
-  totalGasPrice: string;
+  gasPrice: string;
 }

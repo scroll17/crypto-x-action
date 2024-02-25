@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import * as _ from 'lodash';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -5,13 +6,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Integration, IntegrationModel } from '@schemas/integration';
 import { AppConstants } from '../../app.constants';
 import { BlockchainNetworkName } from '@common/blockchain/enums';
-import { IntegrationNames } from '@common/integrations/common';
+import { IBlockchainExplorerMultipleAddressesReport, IntegrationNames } from '@common/integrations/common';
 import { BaseBlockScoutService } from '@integrations/base-block-scout/base-block-scout.service';
 import { ScrollBlockScoutService } from '@integrations/scroll-block-scout/scroll-block-scout.service';
 import { LineaExplorerService } from '@integrations/linea-explorer/linea-explorer.service';
 import { ZkSyncBlockExplorerService } from '@integrations/zk-sync-block-explorer/zk-sync-block-explorer.service';
 import { CryptoCompareService } from '@integrations/crypto-compare/crypto-compare.service';
 import { AbstractBlockchainExplorerIntegration } from '@integrations/_utils/abstract-blockchain-explorer-integration';
+import { TransactionReportEntity, TransactionReportItemEntity } from './entities';
 
 type TIntegrationServices =
   | BaseBlockScoutService
@@ -48,6 +50,37 @@ export class WalletInspectorService {
     integrationsMap.map(([name, service]) => this.INTEGRATION_SERVICES_MAP.set(name, service));
   }
 
+  private visualiseTransactionsReport(
+    total: IBlockchainExplorerMultipleAddressesReport,
+  ): Omit<TransactionReportEntity, 'columns'> {
+    const { reports, ...reportTotals } = total;
+
+    const reportItems: TransactionReportItemEntity[] = reports.map((report) => {
+      return {
+        ..._.pick(report, ['address', 'txCount', 'dContracts', 'uContracts', 'uDays', 'uWeeks', 'uMonths']),
+        eth: `${report.eth[0].slice(0, 2 + 4)} ($${report.eth[1].toFixed(2)})`,
+        volume: `${report.volume[0].slice(0, 2 + 3)} ($${report.volume[1].toFixed(3)})`,
+        gasUsed: `${report.gasUsed.slice(0, 2 + 5)}`,
+        firstTxDate: report.firstTxDate ? dayjs(report.firstTxDate).format('DD.MM.YY') : '-',
+        lastTxDate: report.lastTxDate ? dayjs(report.lastTxDate).format('DD.MM.YY') : '-',
+        fee: `${report.fee[0].slice(0, 2 + 5)} ($${report.fee[1].toFixed(3)})`,
+        gasPrice: `${report.gasPrice[0].slice(0, 2 + 5)} ($${report.gasPrice[1].toFixed(3)})`,
+      };
+    });
+
+    return {
+      items: reportItems,
+      total: {
+        totalEth: `${reportTotals.totalEth[0].toFixed(4)} ($${reportTotals.totalEth[1].toFixed(2)})`,
+        totalVolume: `${reportTotals.totalVolume[0].toFixed(4)} ($${reportTotals.totalVolume[1].toFixed(2)})`,
+        totalFee: `${reportTotals.totalFee[0].toFixed(5)} ($${reportTotals.totalFee[1].toFixed(3)})`,
+        totalGasPrice: `${reportTotals.totalGasPrice[0].toFixed(5)} ($${reportTotals.totalGasPrice[1].toFixed(
+          3,
+        )})`,
+      },
+    };
+  }
+
   public async getNetworks(onlyActive = true) {
     this.logger.debug('Get all available networks', {
       onlyActive,
@@ -73,7 +106,10 @@ export class WalletInspectorService {
     return networks as BlockchainNetworkName[];
   }
 
-  public async buildTransactionsReport(network: BlockchainNetworkName, addresses: string[]) {
+  public async buildTransactionsReport(
+    network: BlockchainNetworkName,
+    addresses: string[],
+  ): Promise<TransactionReportEntity> {
     const integrationName = AppConstants.Integration.WALLET_CHECKER_INTEGRATIONS[network];
     if (!integrationName) {
       throw new HttpException('Integration by Network not implemented', HttpStatus.BAD_REQUEST);
@@ -91,16 +127,12 @@ export class WalletInspectorService {
       throw new HttpException('Cannot load ETH price', HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    return await integrationService.getMultipleAddressesReport(addresses, ethPrice);
+    const rawReport = await integrationService.getMultipleAddressesReport(addresses, ethPrice);
+    const report = this.visualiseTransactionsReport(rawReport);
+
+    return {
+      ...report,
+      columns: AppConstants.WalletInspector.TRANSACTIONS_REPORT_COLUMNS_MAP,
+    };
   }
-  /**
-   *    TODO:
-   *      1. convert reports
-   *      2. return reports
-   *      3. return mapper object:
-   *        {
-   *          'eth': ['ETH', 'ETH']
-   *          'dContracts': ['D Contracts', 'Deployed Contracts'] (table column name, on focus text)
-   *        }
-   * */
 }

@@ -5,8 +5,8 @@ import { WalletInspectorService } from './wallet-inspector.service';
 import { GetTransactionsReportDto } from './dto';
 import { TransactionReportEntity } from './entities';
 
-@Controller('wallet-checker')
-@ApiTags('WalletChecker')
+@Controller('wallet-inspector')
+@ApiTags('WalletInspector')
 export class WalletInspectorController {
   constructor(private readonly walletInspectorService: WalletInspectorService) {}
 
@@ -29,7 +29,7 @@ export class WalletInspectorController {
     return this.walletInspectorService.getNetworks(onlyActive);
   }
 
-  @Post('/transactions-report')
+  @Post('/build-transactions-report')
   @HttpCode(HttpStatus.OK)
   @AuthUser()
   @ApiOperation({ summary: 'Get Transactions report by Multiple Addresses in Blockchain.' })
