@@ -31,8 +31,8 @@ import { BlockchainAccountModule } from './modules/dbl/blockchain/account/accoun
 import { BlockchainNetworkModule } from './modules/dbl/blockchain/network/network.module';
 import { EthereumNetworkModule } from './modules/networks/ethereum/ethereum.module';
 import { StarknetNetworkModule } from './modules/networks/starknet/starknet.module';
-import { WalletCheckerModule } from './modules/wallet-checker/wallet-checker.module';
-import { INTEGRATION_MODULES } from './modules/integrations';
+import { WalletInspectorModule } from './modules/wallet-inspector/wallet-inspector.module';
+import { INTEGRATION_MODULES } from '@integrations/index';
 
 @Module({
   imports: [
@@ -86,7 +86,7 @@ import { INTEGRATION_MODULES } from './modules/integrations';
     EthereumNetworkModule,
     StarknetNetworkModule,
     // Checkers
-    WalletCheckerModule,
+    WalletInspectorModule,
     // Other
     TelegramModule,
     AdminModule,

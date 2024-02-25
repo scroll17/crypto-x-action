@@ -19,10 +19,8 @@ type TIntegrationServices =
   | LineaExplorerService
   | ZkSyncBlockExplorerService;
 
-// TODO: rename to wallet-inspector
-
 @Injectable()
-export class WalletCheckerService {
+export class WalletInspectorService {
   private readonly logger = new Logger(this.constructor.name);
 
   private readonly INTEGRATIONS_NETWORK_MAP = new Map(
@@ -95,4 +93,14 @@ export class WalletCheckerService {
 
     return await integrationService.getMultipleAddressesReport(addresses, ethPrice);
   }
+  /**
+   *    TODO:
+   *      1. convert reports
+   *      2. return reports
+   *      3. return mapper object:
+   *        {
+   *          'eth': ['ETH', 'ETH']
+   *          'dContracts': ['D Contracts', 'Deployed Contracts'] (table column name, on focus text)
+   *        }
+   * */
 }

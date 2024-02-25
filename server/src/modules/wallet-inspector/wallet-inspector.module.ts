@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { WalletCheckerService } from './wallet-checker.service';
-import { WalletCheckerController } from './wallet-checker.controller';
+import { WalletInspectorService } from './wallet-inspector.service';
+import { WalletInspectorController } from './wallet-inspector.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Integration, IntegrationSchema } from '@schemas/integration';
 import { INTEGRATION_MODULES } from '../integrations';
@@ -15,7 +15,7 @@ import { INTEGRATION_MODULES } from '../integrations';
       },
     ]),
   ],
-  providers: [WalletCheckerService],
-  controllers: [WalletCheckerController],
+  providers: [WalletInspectorService],
+  controllers: [WalletInspectorController],
 })
-export class WalletCheckerModule {}
+export class WalletInspectorModule {}
