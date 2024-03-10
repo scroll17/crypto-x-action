@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 import { Transform, Type } from 'class-transformer';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-export class CreateBlockchainAccountDto {
+export class AddBlockchainAccountDto {
   @IsString()
   @MinLength(1)
   @IsNotEmpty()

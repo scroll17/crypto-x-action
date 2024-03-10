@@ -11,7 +11,7 @@ import {
   BlockchainAccountModel,
 } from '@schemas/blockcain/account';
 import { BlockchainNetwork, BlockchainNetworkModel } from '@schemas/blockcain/network';
-import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
+import { AddBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
 import { PaginateResultEntity } from '@common/entities';
 import { Comment, CommentModel } from '@schemas/comment';
 import { EditAction } from '@common/enums';
@@ -27,7 +27,7 @@ export class BlockchainAccountService {
     @InjectModel(BlockchainNetwork.name) private readonly blockchainNetworkModel: BlockchainNetworkModel,
   ) {}
 
-  public async add(user: UserDocument, dto: CreateBlockchainAccountDto) {
+  public async add(user: UserDocument, dto: AddBlockchainAccountDto) {
     this.logger.debug('Create new Blockchain Account', {
       admin: _.pick(user, ['_id', 'email']),
       account: dto,

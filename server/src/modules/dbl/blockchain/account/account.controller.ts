@@ -26,7 +26,7 @@ import { BlockchainAccountService } from './account.service';
 import { AuthUser, CurrentUser } from '@common/decorators';
 import { UserDocument } from '@schemas/user';
 import { BlockchainAccountEntity } from '@schemas/blockcain/account';
-import { CreateBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
+import { AddBlockchainAccountDto, EditBlockchainAccountDto, FindBlockchainAccountDto } from './dto';
 import { BlockchainAccountPaginateResultEntity } from './entities';
 import { CreateCommentDto, ChangeCommentDto } from '@common/dto';
 
@@ -47,7 +47,7 @@ export class BlockchainAccountController {
   })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
   @ApiForbiddenResponse({ description: 'Account with passed name already exists.' })
-  async add(@CurrentUser() user: UserDocument, @Body() dto: CreateBlockchainAccountDto) {
+  async add(@CurrentUser() user: UserDocument, @Body() dto: AddBlockchainAccountDto) {
     return this.blockchainAccountService.add(user, dto);
   }
 
