@@ -33,6 +33,7 @@ export class BlockchainAccount {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: BLOCKCHAIN_NETWORK_COLLECTION_NAME, required: true })
   network: BlockchainNetworkDocument;
+  // TODO: could be many networks
 
   @Prop({ type: [SchemaTypes.ObjectId], ref: COMMENT_COLLECTION_NAME, required: true, default: [] })
   comments: CommentDocument[];
@@ -43,6 +44,9 @@ export class BlockchainAccount {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: USER_COLLECTION_NAME, required: true })
   createdBy: UserDocument;
+
+  @Prop({ type: Date, required: false, default: null })
+  removedAt: Date | null; // time when this Account was removed
 }
 
 export const BlockchainAccountSchema = SchemaFactory.createForClass(

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { BlockchainAccount } from './blockchain-account.schema';
 import { UserEntity } from '@schemas/user';
@@ -33,6 +33,15 @@ export class BlockchainAccountEntity implements BlockchainAccount {
     description: 'The network shape blockchain account address',
   })
   address: string;
+
+  @ApiPropertyOptional()
+  @ApiProperty({
+    type: String,
+    format: 'date-time',
+    example: '2023-03-21T17:32:28Z',
+    description: 'The time when this Account was removed from config',
+  })
+  removedAt: Date | null;
 
   @ApiProperty({
     type: BlockchainNetworkEntity,
