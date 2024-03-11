@@ -13,6 +13,9 @@ export namespace AppConstants {
     export const BlockchainNetworksFileName = '.blockchain-networks.json';
     export const BlockchainNetworksFilePath = path.resolve(EnvFolderPath, BlockchainNetworksFileName);
 
+    export const BlockchainAccountsFileName = '.blockchain-accounts.json';
+    export const BlockchainAccountsFilePath = path.resolve(EnvFolderPath, BlockchainAccountsFileName);
+
     export const IntegrationsFileName = '.integrations.json';
     export const IntegrationsFilePath = path.resolve(EnvFolderPath, IntegrationsFileName);
   }

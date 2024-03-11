@@ -1,10 +1,16 @@
 import { configuration } from './configuration';
-import { usersConfiguration, blockchainNetworksConfiguration, integrationsConfiguration } from './json-based';
+import {
+  usersConfiguration,
+  blockchainNetworksConfiguration,
+  integrationsConfiguration,
+  blockchainAccountsConfiguration,
+} from './json-based';
 
 const configurationLoaders = [
   configuration,
   usersConfiguration,
   blockchainNetworksConfiguration,
+  blockchainAccountsConfiguration,
   integrationsConfiguration,
 ];
 

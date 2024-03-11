@@ -1,0 +1,20 @@
+[
+  {
+    "name": "1",
+    "labels": [
+      "sergey"
+    ],
+    "address": "0x6c81dbf1845cadd5ac3ef502f965f1fd8a4c813b",
+    "network": "ethereum-goerli",
+    "comments": []
+  },
+  {
+    "name": "30",
+    "labels": [
+      "denis"
+    ],
+    "address": "0x67707eee7a6faf9ecfe31784f4d3b705dc7a7cc5",
+    "network": "ethereum-goerli",
+    "comments": []
+  }
+]
